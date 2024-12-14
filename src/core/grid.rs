@@ -52,6 +52,7 @@ impl Grid {
         for index in 0..LENGTH_DIMENSION.into() {
             let (is_line_valid, wrong_line_value) = grid.is_line_valid(index);
             let (is_column_valid, wrong_column_value) = grid.is_column_valid(index);
+            let (is_region_valid, wrong_region_value) = grid.is_region_valid(index);
 
             if !is_line_valid {
                 panic!("Row index {} is not valid, duplicate value {}", index, wrong_line_value.unwrap());
@@ -59,6 +60,10 @@ impl Grid {
 
             if !is_column_valid {
                 panic!("Column index {} is not valid, duplicate value {}", index, wrong_column_value.unwrap());
+            }
+
+            if !is_region_valid {
+                panic!("Region index {} is not valid, duplicate value {}", index, wrong_region_value.unwrap());
             }
         }
 
@@ -101,8 +106,38 @@ impl Grid {
         return (true, None);
     }
 
-    fn is_region_valid(&self, region_index: u8) -> bool {
-        unimplemented!()
+    fn is_region_valid(&self, region_index: u8) -> (bool, Option<u8>) {
+        self.handle_index_out_of_bound(region_index);
+
+
+        let (start_row, start_column) = match region_index {
+            0 => (0 as u8,0 as u8),
+            1 => (0 as u8,3 as u8),
+            2 => (0 as u8,5 as u8),
+            3 => (3 as u8,0 as u8),
+            4 => (3 as u8,3 as u8),
+            5 => (3 as u8,5 as u8),
+            6 => (5 as u8,0 as u8),
+            7 => (5 as u8,3 as u8),
+            8 => (5 as u8,5 as u8),
+            _ => panic!("Region out of range")
+        };
+
+        let mut already_used = vec![];
+
+        for row_index in start_row..(LENGTH_DIMENSION / 3) {
+            for column_index in start_column..(LENGTH_DIMENSION / 3) {
+                let value = self.values[row_index as usize][column_index as usize];
+
+                if already_used.contains(&value) && value != TO_BE_SOLVED {
+                    return (false, Some(value));
+                } else {
+                    already_used.push(value);
+                }
+            }
+        }
+
+        return (true, None);
     }
 
     pub fn locate_missing_box(&self) -> Vec<Vec<u8>> {
@@ -126,7 +161,7 @@ impl Grid {
     }
 
     fn handle_index_out_of_bound(&self, index: u8) {
-       if index > 9 {
+       if index > LENGTH_DIMENSION.into() {
            panic!("Index '{index}' out of bound");
         }
     }
