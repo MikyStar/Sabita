@@ -1,4 +1,5 @@
-const LENGTH_DIMENSION: u8 = 9;
+pub const LENGTH_DIMENSION: u8 = 9;
+pub const TO_BE_SOLVED: u8 = 0;
 
 ////////////////////
 
@@ -48,11 +49,16 @@ impl Grid {
 
         let grid = Grid { values, types };
 
-        for line_index in 0..LENGTH_DIMENSION.into() {
-            let (is_valid, wrong_value) = grid.is_line_valid(line_index);
+        for index in 0..LENGTH_DIMENSION.into() {
+            let (is_line_valid, wrong_line_value) = grid.is_line_valid(index);
+            let (is_column_valid, wrong_column_value) = grid.is_column_valid(index);
 
-            if !is_valid {
-                panic!("Row index {} is not valid, duplicate value {}", line_index, wrong_value.unwrap());
+            if !is_line_valid {
+                panic!("Row index {} is not valid, duplicate value {}", index, wrong_line_value.unwrap());
+            }
+
+            if !is_column_valid {
+                panic!("Column index {} is not valid, duplicate value {}", index, wrong_column_value.unwrap());
             }
         }
 
@@ -67,7 +73,7 @@ impl Grid {
         let mut already_used = vec![];
 
         for value in self.values[line_index as usize].iter() {
-            if already_used.contains(value) {
+            if already_used.contains(value) && *value != TO_BE_SOLVED {
                 return (false, Some(*value));
             } else {
                 already_used.push(*value);
@@ -77,8 +83,22 @@ impl Grid {
         return (true, None);
     }
 
-    fn is_column_valid(&self, column_index: u8) -> bool {
-        unimplemented!()
+    fn is_column_valid(&self, column_index: u8) -> (bool, Option<u8>) {
+        self.handle_index_out_of_bound(column_index);
+
+        let mut already_used = vec![];
+
+        for index in 0..LENGTH_DIMENSION.into() {
+            let value = self.values[index][column_index as usize];
+
+            if already_used.contains(&value) && value != TO_BE_SOLVED {
+                return (false, Some(value));
+            } else {
+                already_used.push(value);
+            }
+        }
+
+        return (true, None);
     }
 
     fn is_region_valid(&self, region_index: u8) -> bool {
