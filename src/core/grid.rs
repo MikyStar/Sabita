@@ -1,8 +1,3 @@
-
-////////////////////////////////////////
-
-use std::u8;
-
 const LENGTH_DIMENSION: u8 = 9;
 
 ////////////////////
@@ -51,15 +46,35 @@ impl Grid {
             types.push(line);
         }
 
-        return Grid { values, types }
+        let grid = Grid { values, types };
+
+        for line_index in 0..LENGTH_DIMENSION.into() {
+            let (is_valid, wrong_value) = grid.is_line_valid(line_index);
+
+            if !is_valid {
+                panic!("Row index {} is not valid, duplicate value {}", line_index, wrong_value.unwrap());
+            }
+        }
+
+        return grid;
     }
 
     //////////
 
-    fn is_line_valid(&self, line_index: u8) -> bool {
+    fn is_line_valid(&self, line_index: u8) -> (bool, Option<u8>) {
         self.handle_index_out_of_bound(line_index);
 
-        unimplemented!()
+        let mut already_used = vec![];
+
+        for value in self.values[line_index as usize].iter() {
+            if already_used.contains(value) {
+                return (false, Some(*value));
+            } else {
+                already_used.push(*value);
+            }
+        }
+
+        return (true, None);
     }
 
     fn is_column_valid(&self, column_index: u8) -> bool {
@@ -86,7 +101,7 @@ impl Grid {
 
     pub fn print_grid(&self, grid: Option<GridValues>) {
         grid.unwrap_or(self.values.clone()).iter().for_each(|line| {
-            println!("{:#?}", line)
+            println!("{:?}", line)
         })
     }
 
