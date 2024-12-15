@@ -25,9 +25,16 @@ impl Grid {
     pub fn new(values: GridValues) -> Self {
         let mut types: GridTypes = vec![];
 
+        if values.len() != LENGTH_DIMENSION.into() {
+            panic!("Wrong number of lines: {}", values.len());
+        }
+
         for (row_index, row) in values.iter().enumerate() {
-            if row.len() > LENGTH_DIMENSION.into() {
-                panic!("Row index {} larger than {}", row_index, LENGTH_DIMENSION)
+            if row.len() != LENGTH_DIMENSION.into() {
+                panic!(
+                    "Row index {} has a different number of columns than {}",
+                    row_index, LENGTH_DIMENSION
+                )
             }
 
             let mut line = vec![];
@@ -134,20 +141,21 @@ impl Grid {
         let (start_row, start_column) = match region_index {
             0 => (0 as u8, 0 as u8),
             1 => (0 as u8, 3 as u8),
-            2 => (0 as u8, 5 as u8),
+            2 => (0 as u8, 6 as u8),
             3 => (3 as u8, 0 as u8),
             4 => (3 as u8, 3 as u8),
-            5 => (3 as u8, 5 as u8),
-            6 => (5 as u8, 0 as u8),
-            7 => (5 as u8, 3 as u8),
-            8 => (5 as u8, 5 as u8),
+            5 => (3 as u8, 6 as u8),
+            6 => (6 as u8, 0 as u8),
+            7 => (6 as u8, 3 as u8),
+            8 => (6 as u8, 6 as u8),
             _ => panic!("Region out of range"),
         };
+        let third_of_length = LENGTH_DIMENSION / 3;
 
         let mut already_used = vec![];
 
-        for row_index in start_row..(LENGTH_DIMENSION / 3) {
-            for column_index in start_column..(LENGTH_DIMENSION / 3) {
+        for row_index in start_row..(start_row + third_of_length) {
+            for column_index in start_column..(start_column + third_of_length) {
                 let value = self.values[row_index as usize][column_index as usize];
 
                 if already_used.contains(&value) && value != TO_BE_SOLVED {

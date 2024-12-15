@@ -1,20 +1,18 @@
-mod core;
-use crate::core::grid::Grid;
-use crate::core::grid::TO_BE_SOLVED;
+use sabi::core::grid::{Grid, TO_BE_SOLVED};
 
 ////////////////////////////////////////
 
 fn main() {
     let test_grid = Grid::new(vec![
-        vec![1, 2, 3, 4, 5, 6, 7, 8, TO_BE_SOLVED],
-        vec![2, 3, 4, 5, 6, 7, 8, 9, TO_BE_SOLVED],
-        vec![3, 4, 5, 6, 7, 8, 9, 1, TO_BE_SOLVED],
-        vec![4, 5, 6, 7, 8, 9, 1, 2, TO_BE_SOLVED],
-        vec![5, 6, 7, 8, 9, 1, 2, 3, TO_BE_SOLVED],
-        vec![6, 7, 8, 9, 1, 2, 3, 4, TO_BE_SOLVED],
-        vec![7, 8, 9, 1, 2, 3, 4, 5, TO_BE_SOLVED],
-        vec![8, 9, 1, 2, 3, 4, 5, 6, TO_BE_SOLVED],
-        vec![9, 1, 2, 3, 4, 5, 6, 7, TO_BE_SOLVED],
+        vec![3, 9, 1, 2, 8, 6, 5, 7, 4],
+        vec![4, 8, 7, 3, 5, 9, 1, 2, 6],
+        vec![6, 5, 2, 7, 1, 4, 8, 3, 9],
+        vec![8, 7, 5, 4, 3, 1, 6, 9, 2],
+        vec![2, 1, 3, 9, 6, 7, 4, 8, 5],
+        vec![9, 6, 4, 5, 2, 8, 7, 1, 3],
+        vec![1, 4, 9, 6, 7, 3, 2, 5, 8],
+        vec![5, 3, 8, 1, 4, 2, 9, 6, 7],
+        vec![7, 2, 6, 8, 9, 5, 3, 4, TO_BE_SOLVED], // Should be 1
     ]);
 
     let missing_boxes = test_grid.locate_missing_box();
