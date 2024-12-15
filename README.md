@@ -12,4 +12,6 @@ cargo run # Builds and run the project
 cargo build # Only build it
 
 cargo test # Run unit tests
+
+cargo fmt # Format code
 ```
