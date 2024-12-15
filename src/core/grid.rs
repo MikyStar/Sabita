@@ -22,6 +22,9 @@ pub struct Grid {
 ////////////////////
 
 impl Grid {
+    //////////
+    // Constructor
+
     pub fn new(values: GridValues) -> Self {
         let mut types: GridTypes = vec![];
 
@@ -100,6 +103,14 @@ impl Grid {
     }
 
     //////////
+    // Accessors
+
+    pub fn get_values(&self) -> GridValues {
+        return (*self.values).to_vec();
+    }
+
+    //////////
+    // Methods
 
     fn is_line_valid(&self, line_index: u8) -> (bool, Option<u8>) {
         self.handle_index_out_of_bound(line_index);
@@ -194,4 +205,10 @@ impl Grid {
             panic!("Index '{index}' out of bound");
         }
     }
+}
+
+////////////////////
+
+pub fn print_grid(grid: GridValues) {
+    grid.iter().for_each(|line| println!("{:?}", line))
 }

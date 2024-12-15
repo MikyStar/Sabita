@@ -1,9 +1,9 @@
-use sabi::core::grid::{Grid, TO_BE_SOLVED};
+use sabi::core::grid::{Grid, TO_BE_SOLVED, print_grid};
 
 ////////////////////////////////////////
 
 fn main() {
-    let test_grid = Grid::new(vec![
+    let grid = Grid::new(vec![
         vec![3, 9, 1, 2, 8, 6, 5, 7, 4],
         vec![4, 8, 7, 3, 5, 9, 1, 2, 6],
         vec![6, 5, 2, 7, 1, 4, 8, 3, 9],
@@ -15,6 +15,10 @@ fn main() {
         vec![7, 2, 6, 8, 9, 5, 3, 4, TO_BE_SOLVED], // Should be 1
     ]);
 
-    let missing_boxes = test_grid.locate_missing_box();
-    test_grid.print_grid(Some(missing_boxes))
+    println!("Full grid");
+    print_grid(grid.get_values());
+
+    println!("\nMissing boxes positions");
+    let missing_boxes = grid.locate_missing_box();
+    print_grid(missing_boxes);
 }
