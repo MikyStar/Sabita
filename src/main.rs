@@ -6,7 +6,7 @@ use sabi::core::solver::get_box_solutions;
 
 fn main() {
     let grid = Grid::new(vec![
-        vec![3, 9, 1, 2, 8, 6, 5, 7, 4],
+        vec![TO_BE_SOLVED, 9, 1, 2, 8, 6, 5, 7, 4], // Should be 3
         vec![4, 8, 7, 3, 5, 9, 1, 2, 6],
         vec![6, 5, 2, 7, 1, 4, 8, 3, 9],
         vec![8, 7, 5, 4, 3, 1, 6, 9, 2],
@@ -25,7 +25,12 @@ fn main() {
     print_grid(&missing_boxes);
 
     println!("\nSolutions");
-    let first_missing = &missing_boxes[0];
-    let solutions = get_box_solutions(&grid.get_values(), &first_missing);
-    print!("{:?}", solutions)
+    for location in missing_boxes {
+        let solutions = get_box_solutions(&grid.get_values(), &location);
+
+        match solutions {
+            Ok(solutions) => println!("{:?} -> {:?}", location, solutions),
+            Err(err) => panic!("{}", err),
+        }
+    }
 }
