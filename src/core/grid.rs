@@ -124,15 +124,14 @@ impl Grid {
         locations
     }
 
-    pub fn print_grid(&self, grid: Option<GridValues>) {
-        grid.unwrap_or(self.values.clone())
-            .iter()
-            .for_each(|line| println!("{:?}", line))
+    pub fn print(&self) {
+        print_2dvec(&self.get_values());
     }
 }
 
 ////////////////////
 
-pub fn print_grid(grid: &GridValues) {
+/// Prints a two dimensions vector to stdout
+pub fn print_2dvec(grid: &GridValues) {
     grid.iter().for_each(|line| println!("{:?}", line))
 }

@@ -1,5 +1,5 @@
 use sabi::core::constants::TO_BE_SOLVED;
-use sabi::core::grid::{print_grid, Grid};
+use sabi::core::grid::{print_2dvec, Grid};
 use sabi::core::solver::get_box_solutions;
 
 ////////////////////////////////////////
@@ -18,11 +18,11 @@ fn main() {
     ]);
 
     println!("Full grid");
-    print_grid(&grid.get_values());
+    grid.print();
 
     println!("\nMissing boxes positions");
     let missing_boxes = grid.locate_missing_box();
-    print_grid(&missing_boxes);
+    print_2dvec(&missing_boxes);
 
     println!("\nSolutions");
     for location in missing_boxes {
