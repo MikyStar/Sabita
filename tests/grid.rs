@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod grid_tests {
-    use sabi::core::grid::{Grid, TO_BE_SOLVED};
+    use sabi::core::constants::TO_BE_SOLVED;
+    use sabi::core::grid::Grid;
 
     ////////////////////
     // Valid grid
