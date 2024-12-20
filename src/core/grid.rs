@@ -1,4 +1,4 @@
-use super::constants::{LENGTH_DIMENSION, TO_BE_SOLVED};
+use super::constants::LENGTH_DIMENSION;
 use super::validation::{is_column_valid, is_line_valid, is_region_valid};
 
 ////////////////////////////////////////
@@ -50,7 +50,7 @@ impl Grid {
                     )
                 }
 
-                if value > &LENGTH_DIMENSION.into() {
+                if value > &LENGTH_DIMENSION {
                     panic!(
                         "Value '{}' out of bound at position {};{}",
                         value, row_index, column_index
@@ -104,7 +104,7 @@ impl Grid {
     // Accessors
 
     pub fn get_values(&self) -> GridValues {
-        return (*self.values).to_vec();
+        (*self.values).to_vec()
     }
 
     //////////
@@ -121,7 +121,7 @@ impl Grid {
             }
         }
 
-        return locations;
+        locations
     }
 
     pub fn print_grid(&self, grid: Option<GridValues>) {

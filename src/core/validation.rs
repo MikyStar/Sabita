@@ -22,7 +22,7 @@ pub fn is_line_valid(values: &GridValues, line_index: &u8) -> (bool, Option<u8>)
         }
     }
 
-    return (true, None);
+    (true, None)
 }
 
 pub fn is_column_valid(values: &GridValues, column_index: &u8) -> (bool, Option<u8>) {
@@ -40,22 +40,22 @@ pub fn is_column_valid(values: &GridValues, column_index: &u8) -> (bool, Option<
         }
     }
 
-    return (true, None);
+    (true, None)
 }
 
 pub fn is_region_valid(values: &GridValues, region_index: &u8) -> (bool, Option<u8>) {
     handle_index_out_of_bound(region_index);
 
     let (start_row, start_column) = match region_index {
-        0 => (0 as u8, 0 as u8),
-        1 => (0 as u8, 3 as u8),
-        2 => (0 as u8, 6 as u8),
-        3 => (3 as u8, 0 as u8),
-        4 => (3 as u8, 3 as u8),
-        5 => (3 as u8, 6 as u8),
-        6 => (6 as u8, 0 as u8),
-        7 => (6 as u8, 3 as u8),
-        8 => (6 as u8, 6 as u8),
+        0 => (0_u8, 0_u8),
+        1 => (0_u8, 3_u8),
+        2 => (0_u8, 6_u8),
+        3 => (3_u8, 0_u8),
+        4 => (3_u8, 3_u8),
+        5 => (3_u8, 6_u8),
+        6 => (6_u8, 0_u8),
+        7 => (6_u8, 3_u8),
+        8 => (6_u8, 6_u8),
         _ => panic!("Region out of range"),
     };
     let third_of_length = LENGTH_DIMENSION / 3;
@@ -74,5 +74,5 @@ pub fn is_region_valid(values: &GridValues, region_index: &u8) -> (bool, Option<
         }
     }
 
-    return (true, None);
+    (true, None)
 }

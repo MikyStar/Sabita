@@ -11,6 +11,9 @@ cargo run # Builds and run the project
 
 cargo fmt # Format code
 
+cargo clippy # Advanced linter
+cargo clippy --fix # Fix auto fixable
+
 cargo build # Only build it
 
 cargo test # Run all unit tests

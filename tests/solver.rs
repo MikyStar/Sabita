@@ -1,8 +1,5 @@
 #[cfg(test)]
 mod solver_tests {
-    use core::panic;
-    use std::fmt::Result;
-
     use sabi::core::constants::TO_BE_SOLVED;
     use sabi::core::solver::{get_box_solutions, BoxSolutionNotFound};
 
