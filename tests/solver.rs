@@ -55,8 +55,10 @@ mod solver_tests {
 
     #[test]
     fn should_be_3_or_8() {
+        let testing_this_box = TO_BE_SOLVED;
+
         let values = vec![
-            vec![TO_BE_SOLVED, 9, 1, 2, TO_BE_SOLVED, 6, 5, 7, 4],
+            vec![testing_this_box, 9, 1, 2, TO_BE_SOLVED, 6, 5, 7, 4],
             vec![4, TO_BE_SOLVED, 7, 3, 5, 9, 1, 2, 6],
             vec![6, 5, 2, 7, 1, 4, 8, 3, 9],
             vec![TO_BE_SOLVED, 7, 5, 4, 3, 1, 6, 9, 2],
