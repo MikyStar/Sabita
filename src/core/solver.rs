@@ -28,12 +28,12 @@ pub fn get_box_solutions(
 
         let mut was_an_error_found = false;
 
-        for index in 0..LENGTH_DIMENSION.into() {
-            let line_valid = is_line_valid(&grid_to_test, &index).0;
-            let column_valid = is_column_valid(&grid_to_test, &index).0;
-            let region_valid = is_region_valid(&grid_to_test, &index).0;
+        for index in 0..LENGTH_DIMENSION {
+            let is_line_valid = is_line_valid(&grid_to_test, &index).0;
+            let is_column_valid = is_column_valid(&grid_to_test, &index).0;
+            let is_region_valid = is_region_valid(&grid_to_test, &index).0;
 
-            if !line_valid | !column_valid | !region_valid {
+            if !is_line_valid | !is_column_valid | !is_region_valid {
                 was_an_error_found = true;
                 break;
             }

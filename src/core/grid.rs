@@ -67,7 +67,7 @@ impl Grid {
             types.push(line);
         }
 
-        for index in 0..LENGTH_DIMENSION.into() {
+        for index in 0..LENGTH_DIMENSION {
             let (is_line_valid, wrong_line_value) = is_line_valid(&values, &index);
             let (is_column_valid, wrong_column_value) = is_column_valid(&values, &index);
             let (is_region_valid, wrong_region_value) = is_region_valid(&values, &index);
