@@ -1,6 +1,6 @@
 use sabi::core::constants::TO_BE_SOLVED;
-use sabi::core::grid::{location_to_region, Grid};
-use sabi::core::solver::sort_solutions_complexity;
+use sabi::core::grid::Grid;
+use sabi::core::solver::reduce_solutions;
 
 ////////////////////////////////////////
 
@@ -22,12 +22,6 @@ fn main() {
 
     println!("\nSolutions");
     let missing_boxes = grid.locate_missing_box();
-    let solutions = sort_solutions_complexity(&grid.get_values(), &missing_boxes);
 
-    for (location, solutions) in solutions {
-        println!("{:?} -> {:?}", location, solutions)
-    }
-
-    let region = location_to_region(&vec![8, 8]).unwrap();
-    println!("reg {}", region)
+    reduce_solutions(&grid.get_values(), &missing_boxes);
 }

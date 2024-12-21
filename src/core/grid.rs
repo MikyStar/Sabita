@@ -147,12 +147,8 @@ pub fn location_to_region(box_location: &Vec<u8>) -> Result<u8, Box<dyn Error>> 
         let end_row = start_row + third_of_length - 1;
         let end_column = start_column + third_of_length - 1;
 
-        println!("{} {} {} {}", start_row, end_row, start_column, end_column);
-
         let is_in_region_row = box_location[0] >= start_row && box_location[0] <= end_row;
         let is_in_region_column = box_location[1] >= start_column && box_location[1] <= end_column;
-
-        println!("{} {}", is_in_region_row, is_in_region_column);
 
         if is_in_region_row & is_in_region_column {
             return Ok(index);
