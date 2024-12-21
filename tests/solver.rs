@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod solver_tests {
     use sabi::core::constants::TO_BE_SOLVED;
+    use sabi::core::grid::BoxLocation;
     use sabi::core::solver::{get_box_solutions, BoxSolutionNotFound};
 
     ////////////////////
@@ -20,7 +21,13 @@ mod solver_tests {
             vec![7, 2, 6, 8, 9, 5, 3, 4, TO_BE_SOLVED],
         ];
 
-        let answers = get_box_solutions(&values, &vec![8, 8]);
+        let location = BoxLocation {
+            line: 8,
+            column: 8,
+            region: 8,
+        };
+
+        let answers = get_box_solutions(&values, &location);
 
         match answers {
             Ok(res) => assert_eq!(res, vec![1]),
@@ -42,7 +49,13 @@ mod solver_tests {
             vec![7, 2, 6, 8, 9, 5, 3, 4, 1],
         ];
 
-        let answers = get_box_solutions(&values, &vec![0, 0]);
+        let location = BoxLocation {
+            line: 0,
+            column: 0,
+            region: 0,
+        };
+
+        let answers = get_box_solutions(&values, &location);
 
         match answers {
             Ok(res) => assert_eq!(res, vec![3]),
@@ -66,9 +79,15 @@ mod solver_tests {
             vec![7, 2, 6, 8, 9, 5, 3, 4, 1],
         ];
 
-        let should_be = vec![3, 8];
+        let location = BoxLocation {
+            line: 0,
+            column: 0,
+            region: 0,
+        };
 
-        let answers = get_box_solutions(&values, &vec![0, 0]);
+        let answers = get_box_solutions(&values, &location);
+
+        let should_be = vec![3, 8];
 
         match answers {
             Ok(res) => assert_eq!(res, should_be),
@@ -92,7 +111,13 @@ mod solver_tests {
             vec![7, 2, 6, 8, 9, 5, 3, 4, 1],
         ];
 
-        let answers = get_box_solutions(&values, &vec![0, 0]);
+        let location = BoxLocation {
+            line: 0,
+            column: 0,
+            region: 0,
+        };
+
+        let answers = get_box_solutions(&values, &location);
 
         match answers {
             Ok(_) => assert!(false, "Should have thrown error"),

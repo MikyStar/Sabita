@@ -15,6 +15,13 @@ enum BoxTypes {
 pub type GridValues = Vec<Vec<u8>>;
 type GridTypes = Vec<Vec<BoxTypes>>;
 
+#[derive(Clone)]
+pub struct BoxLocation {
+    pub line: u8,
+    pub column: u8,
+    pub region: u8,
+}
+
 #[derive(Debug)]
 pub struct Grid {
     values: GridValues,
@@ -112,13 +119,23 @@ impl Grid {
     //////////
     // Methods
 
-    pub fn locate_missing_box(&self) -> Vec<Vec<u8>> {
+    pub fn locate_missing_box(&self) -> Vec<BoxLocation> {
         let mut locations = vec![];
 
         for (row_index, row) in self.values.iter().enumerate() {
             for (column_index, value) in row.iter().enumerate() {
                 if *value == 0 {
-                    locations.push(vec![row_index as u8, column_index as u8]);
+                    let line = row_index as u8;
+                    let column = column_index as u8;
+                    let region = location_to_region(&line, &column).unwrap();
+
+                    let loc = BoxLocation {
+                        line,
+                        column,
+                        region,
+                    };
+
+                    locations.push(loc);
                 }
             }
         }
@@ -138,7 +155,8 @@ pub fn print_2d_vec(grid: &GridValues) {
     grid.iter().for_each(|line| println!("{:?}", line))
 }
 
-pub fn location_to_region(box_location: &Vec<u8>) -> Result<u8, Box<dyn Error>> {
+/// Parse coordinates (line, column) into a region index
+pub fn location_to_region(line: &u8, col: &u8) -> Result<u8, Box<dyn Error>> {
     let third_of_length = LENGTH_DIMENSION / 3;
 
     for index in 0..LENGTH_DIMENSION {
@@ -147,17 +165,18 @@ pub fn location_to_region(box_location: &Vec<u8>) -> Result<u8, Box<dyn Error>> 
         let end_row = start_row + third_of_length - 1;
         let end_column = start_column + third_of_length - 1;
 
-        let is_in_region_row = box_location[0] >= start_row && box_location[0] <= end_row;
-        let is_in_region_column = box_location[1] >= start_column && box_location[1] <= end_column;
+        let is_in_region_row = line >= &start_row && line <= &end_row;
+        let is_in_region_column = col >= &start_column && col <= &end_column;
 
         if is_in_region_row & is_in_region_column {
             return Ok(index);
         }
     }
 
-    Err(format!("No region found for '{:?}'", box_location).into())
+    Err(format!("No region found for [{},{}]", line, col).into())
 }
 
+/// Parse a region index into coordinates (line, column)
 pub fn region_to_location(region_index: &u8) -> (u8, u8) {
     let location = match region_index {
         0 => (0_u8, 0_u8),
