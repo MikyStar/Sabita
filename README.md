@@ -1,14 +1,14 @@
-# Sabi
-
-_Sabi means rust in japanese_
+# Sabi (さび)
 
 Sabi is a Sudoku solver / generator made with Rust
+
+_'Sabi' (さび) means 'rust' in japanese_
 
 ## Dev
 
 ### Commands
 
-> Many alias and sequences are handled with [cargo-make](https://crates.io/crates/cargo-make)
+> Many aliases and sequences are handled through [cargo-make](https://crates.io/crates/cargo-make)
 
 ```sh
 cargo run # Builds and run the project
