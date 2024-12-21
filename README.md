@@ -21,7 +21,7 @@ cargo build # Only build it
 
 cargo test # Run all unit tests
 cargo test <file without extension> # Run specific test file
-cargo test <specific function name># Run specific test function
+cargo test <specific function name> # Run specific test function
 ```
 
 ### Git hooks

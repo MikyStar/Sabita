@@ -30,8 +30,8 @@ pub fn is_column_valid(values: &GridValues, column_index: &u8) -> (bool, Option<
 
     let mut already_used = vec![];
 
-    for index in 0..LENGTH_DIMENSION.into() {
-        let value = values[index][*column_index as usize];
+    for line in values.iter().take(LENGTH_DIMENSION.into()) {
+        let value = line[*column_index as usize];
 
         if already_used.contains(&value) && value != TO_BE_SOLVED {
             return (false, Some(value));

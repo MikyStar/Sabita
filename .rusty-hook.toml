@@ -7,4 +7,3 @@ pre-commit = """
 
 [logging]
 verbose = true
-

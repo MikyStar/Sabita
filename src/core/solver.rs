@@ -1,6 +1,7 @@
 use super::constants::{LENGTH_DIMENSION, TO_BE_SOLVED};
 use super::grid::GridValues;
 use super::validation::{is_column_valid, is_line_valid, is_region_valid};
+
 use std::fmt;
 
 ////////////////////////////////////////
@@ -10,7 +11,7 @@ pub struct BoxSolutionNotFound;
 
 impl fmt::Display for BoxSolutionNotFound {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Solution of the box coul'nt be found") // TODO add location
+        write!(f, "Solution of the box coul'nt be found")
     }
 }
 
@@ -18,7 +19,7 @@ impl fmt::Display for BoxSolutionNotFound {
 
 pub fn get_box_solutions(
     grid_values: &GridValues,
-    location: &Vec<u8>,
+    location: &[u8],
 ) -> Result<Vec<u8>, BoxSolutionNotFound> {
     let mut answers: Vec<u8> = vec![];
 
