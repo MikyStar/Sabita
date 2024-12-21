@@ -1,9 +1,5 @@
 [hooks]
-pre-commit = """
-  cargo fmt -- --check && \
-  cargo test && \
-  cargo clippy
-  """
+pre-commit = "cargo make pre-commit"
 
 [logging]
 verbose = true

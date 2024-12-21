@@ -1,0 +1,63 @@
+########################################
+
+# Sequences
+
+[tasks.pre-commit]
+dependencies = [
+    "format-strict",
+    "test",
+    "outdated-strict",
+    "security-strict",
+    "linter",
+]
+
+[tasks.fix]
+dependencies = [
+    "format-fix",
+    "linter-fix",
+    "outdated-fix",
+]
+
+########################################
+
+# Format
+
+[tasks.format-strict]
+command = "cargo"
+args = ["fmt", "--", "--check"]
+
+[tasks.format-fix]
+command = "cargo"
+args = ["fmt"]
+
+# Security
+
+[tasks.security-strict]
+command = "cargo"
+args = ["audit"]
+
+# Dependencies updates
+
+[tasks.outdated-strict]
+command = "cargo"
+args = ["outdated", "--exit-code", "1"]
+
+[tasks.outdated-fix]
+command = "cargo"
+args = ["update"]
+
+# Linter
+
+[tasks.linter]
+command = "cargo"
+args = ["clippy"]
+
+[tasks.linter-fix]
+command = "cargo"
+args = ["clippy", "--fix"]
+
+# Others
+
+[tasks.test]
+command = "cargo"
+args = ["test"]
