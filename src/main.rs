@@ -1,16 +1,16 @@
 use sabi::core::constants::TO_BE_SOLVED;
-use sabi::core::grid::{print_2dvec, Grid};
-use sabi::core::solver::get_box_solutions;
+use sabi::core::grid::Grid;
+use sabi::core::solver::{get_box_solutions, reduce_solutions, sort_solutions_complexity};
 
 ////////////////////////////////////////
 
 fn main() {
     let grid = Grid::new(vec![
-        vec![TO_BE_SOLVED, 9, 1, 2, 8, 6, 5, 7, 4], // Should be 3
-        vec![4, 8, 7, 3, 5, 9, 1, 2, 6],
-        vec![6, 5, 2, 7, 1, 4, 8, 3, 9],
+        vec![TO_BE_SOLVED, 9, 1, TO_BE_SOLVED, 8, 6, 5, 7, TO_BE_SOLVED], // Should be 3, 2, 4
+        vec![TO_BE_SOLVED, 8, 7, TO_BE_SOLVED, 5, 9, 1, 2, 6],            // Should be 4, 3
+        vec![6, TO_BE_SOLVED, 2, 7, 1, 4, 8, 3, 9],                       // Should be 5
         vec![8, 7, 5, 4, 3, 1, 6, 9, 2],
-        vec![2, 1, 3, 9, 6, 7, 4, 8, 5],
+        vec![TO_BE_SOLVED, 1, 3, 9, 6, 7, 4, 8, 5], // Should be 2
         vec![9, 6, 4, 5, 2, 8, 7, 1, 3],
         vec![1, 4, 9, 6, 7, 3, 2, 5, 8],
         vec![5, 3, 8, 1, 4, 2, 9, 6, 7],
@@ -20,17 +20,11 @@ fn main() {
     println!("Full grid");
     grid.print();
 
-    println!("\nMissing boxes positions");
-    let missing_boxes = grid.locate_missing_box();
-    print_2dvec(&missing_boxes);
-
     println!("\nSolutions");
-    for location in missing_boxes {
-        let solutions = get_box_solutions(&grid.get_values(), &location);
+    let missing_boxes = grid.locate_missing_box();
+    let solutions = sort_solutions_complexity(&grid.get_values(), &missing_boxes);
 
-        match solutions {
-            Ok(solutions) => println!("{:?} -> {:?}", location, solutions),
-            Err(err) => panic!("{}", err),
-        }
+    for (location, solutions) in solutions {
+        println!("{:?} -> {:?}", location, solutions)
     }
 }

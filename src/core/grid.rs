@@ -125,13 +125,13 @@ impl Grid {
     }
 
     pub fn print(&self) {
-        print_2dvec(&self.get_values());
+        print_2d_vec(&self.get_values());
     }
 }
 
 ////////////////////
 
 /// Prints a two dimensions vector to stdout
-pub fn print_2dvec(grid: &GridValues) {
+pub fn print_2d_vec(grid: &GridValues) {
     grid.iter().for_each(|line| println!("{:?}", line))
 }

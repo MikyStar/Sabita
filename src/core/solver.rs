@@ -1,5 +1,5 @@
 use super::constants::{LENGTH_DIMENSION, TO_BE_SOLVED};
-use super::grid::GridValues;
+use super::grid::{print_2d_vec, GridValues};
 use super::validation::{is_column_valid, is_line_valid, is_region_valid};
 
 use std::fmt;
@@ -11,11 +11,36 @@ pub struct BoxSolutionNotFound;
 
 impl fmt::Display for BoxSolutionNotFound {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Solution of the box coul'nt be found")
+        write!(f, "Solution of the box could'nt be found")
     }
 }
 
 ////////////////////////////////////////
+
+/// Returns boxes and solutions ordered by their number of possibilities (asc)
+pub fn sort_solutions_complexity<'a>(
+    grid_values: &GridValues,
+    missing_boxes: &'a Vec<Vec<u8>>,
+) -> Vec<(&'a Vec<u8>, Vec<u8>)> {
+    let mut solutions = vec![];
+
+    for missing in missing_boxes.iter() {
+        let solution = get_box_solutions(&grid_values, &missing).unwrap();
+        solutions.push(solution);
+    }
+
+    let mut sorted_indices = (0..solutions.len()).collect::<Vec<usize>>();
+    sorted_indices.sort_by_key(|&i| solutions[i].len());
+
+    let mut locations_and_solutions = vec![];
+
+    for index in sorted_indices {
+        let combo = (&missing_boxes[index], solutions[index].clone());
+        locations_and_solutions.push(combo);
+    }
+
+    locations_and_solutions
+}
 
 pub fn get_box_solutions(
     grid_values: &GridValues,
