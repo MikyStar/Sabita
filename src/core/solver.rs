@@ -1,9 +1,8 @@
 use super::constants::{LENGTH_DIMENSION, TO_BE_SOLVED};
-use super::grid::{print_2d_vec, GridValues};
+use super::grid::GridValues;
 use super::validation::{is_column_valid, is_line_valid, is_region_valid};
 use crate::core::grid::location_to_region;
 
-use itertools::izip;
 use std::fmt;
 
 ////////////////////////////////////////
@@ -17,6 +16,14 @@ impl fmt::Display for BoxSolutionNotFound {
     }
 }
 
+#[derive(Clone)]
+pub struct SortedSolution<'a> {
+    line: &'a u8,
+    column: &'a u8,
+    region: u8,
+    solutions: Vec<u8>,
+}
+
 ////////////////////////////////////////
 
 pub fn reduce_solutions(grid_values: &GridValues, missing_boxes: &Vec<Vec<u8>>) {
@@ -24,21 +31,27 @@ pub fn reduce_solutions(grid_values: &GridValues, missing_boxes: &Vec<Vec<u8>>) 
     let mut missing_boxes_copy = missing_boxes.clone();
 
     let sols = get_solutions_complexity_sorted(grid_values, missing_boxes);
-    let regions = sols
-        .iter()
-        .map(|sol| location_to_region(sol.0).unwrap())
-        .collect::<Vec<u8>>();
 
-    for (index, ((line_col, solutions), region)) in izip!(&sols, &regions).enumerate() {
-        println!("{}:{:?}({}) -> {:?}", index, line_col, region, solutions);
+    // TODO externalize as it's too usefull
+    for (index, sol) in sols.clone().into_iter().enumerate() {
+        let SortedSolution {
+            line,
+            column,
+            region,
+            solutions,
+        } = sol;
+        println!(
+            "{} = [{}:{}]({}) -> {:?}",
+            index, line, column, region, solutions
+        );
 
         let mut involved_forward_boxes_indices = vec![];
 
         if index + 1 < sols.len() {
             for other_box_index in (index + 1)..sols.len() {
-                let same_line = sols[other_box_index].0[0] == line_col[0];
-                let same_col = sols[other_box_index].0[1] == line_col[1];
-                let same_region = regions[other_box_index] == *region;
+                let same_line = sols[other_box_index].line == line;
+                let same_col = sols[other_box_index].column == column;
+                let same_region = sols[other_box_index].region == region;
 
                 if same_line | same_col | same_region {
                     involved_forward_boxes_indices.push(other_box_index);
@@ -61,11 +74,11 @@ pub fn reduce_solutions(grid_values: &GridValues, missing_boxes: &Vec<Vec<u8>>) 
     // missing_boxes_copy.remove(index);
 }
 
-/// Returns boxes and solutions ordered by their number of possibilities (asc)
+/// Returns boxes, regions and solutions ordered by their number of possibilities (asc)
 pub fn get_solutions_complexity_sorted<'a>(
     grid_values: &GridValues,
     missing_boxes: &'a Vec<Vec<u8>>,
-) -> Vec<(&'a Vec<u8>, Vec<u8>)> {
+) -> Vec<SortedSolution<'a>> {
     let mut solutions = vec![];
 
     for missing in missing_boxes.iter() {
@@ -76,14 +89,21 @@ pub fn get_solutions_complexity_sorted<'a>(
     let mut sorted_indices = (0..solutions.len()).collect::<Vec<usize>>();
     sorted_indices.sort_by_key(|&i| solutions[i].len());
 
-    let mut locations_and_solutions = vec![];
+    let mut locs_regions_solutions = vec![];
 
     for index in sorted_indices {
-        let combo = (&missing_boxes[index], solutions[index].clone());
-        locations_and_solutions.push(combo);
+        let region = location_to_region(&missing_boxes[index]).unwrap();
+        let combo = SortedSolution {
+            line: &missing_boxes[index][0],
+            column: &missing_boxes[index][1],
+            region,
+            solutions: solutions[index].clone(),
+        };
+
+        locs_regions_solutions.push(combo);
     }
 
-    locations_and_solutions
+    locs_regions_solutions
 }
 
 pub fn get_box_solutions(
