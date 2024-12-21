@@ -1,6 +1,8 @@
 use super::constants::LENGTH_DIMENSION;
 use super::validation::{is_column_valid, is_line_valid, is_region_valid};
 
+use std::error::Error;
+
 ////////////////////////////////////////
 
 #[derive(Debug)]
@@ -134,4 +136,45 @@ impl Grid {
 /// Prints a two dimensions vector to stdout
 pub fn print_2d_vec(grid: &GridValues) {
     grid.iter().for_each(|line| println!("{:?}", line))
+}
+
+pub fn location_to_region(box_location: &Vec<u8>) -> Result<u8, Box<dyn Error>> {
+    let third_of_length = LENGTH_DIMENSION / 3;
+
+    for index in 0..LENGTH_DIMENSION {
+        let (start_row, start_column) = region_to_location(&index);
+
+        let end_row = start_row + third_of_length - 1;
+        let end_column = start_column + third_of_length - 1;
+
+        println!("{} {} {} {}", start_row, end_row, start_column, end_column);
+
+        let is_in_region_row = box_location[0] >= start_row && box_location[0] <= end_row;
+        let is_in_region_column = box_location[1] >= start_column && box_location[1] <= end_column;
+
+        println!("{} {}", is_in_region_row, is_in_region_column);
+
+        if is_in_region_row & is_in_region_column {
+            return Ok(index);
+        }
+    }
+
+    Err(format!("No region found for '{:?}'", box_location).into())
+}
+
+pub fn region_to_location(region_index: &u8) -> (u8, u8) {
+    let location = match region_index {
+        0 => (0_u8, 0_u8),
+        1 => (0_u8, 3_u8),
+        2 => (0_u8, 6_u8),
+        3 => (3_u8, 0_u8),
+        4 => (3_u8, 3_u8),
+        5 => (3_u8, 6_u8),
+        6 => (6_u8, 0_u8),
+        7 => (6_u8, 3_u8),
+        8 => (6_u8, 6_u8),
+        _ => panic!("Region out of range"),
+    };
+
+    location
 }

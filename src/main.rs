@@ -1,6 +1,6 @@
 use sabi::core::constants::TO_BE_SOLVED;
-use sabi::core::grid::Grid;
-use sabi::core::solver::{get_box_solutions, reduce_solutions, sort_solutions_complexity};
+use sabi::core::grid::{location_to_region, Grid};
+use sabi::core::solver::sort_solutions_complexity;
 
 ////////////////////////////////////////
 
@@ -27,4 +27,7 @@ fn main() {
     for (location, solutions) in solutions {
         println!("{:?} -> {:?}", location, solutions)
     }
+
+    let region = location_to_region(&vec![8, 8]).unwrap();
+    println!("reg {}", region)
 }
