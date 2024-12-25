@@ -15,7 +15,7 @@ enum BoxTypes {
 pub type GridValues = Vec<Vec<u8>>;
 type GridTypes = Vec<Vec<BoxTypes>>;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct BoxLocation {
     pub line: u8,
     pub column: u8,

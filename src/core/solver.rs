@@ -15,16 +15,17 @@ impl fmt::Display for BoxSolutionNotFound {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct SortedSolution<'a> {
     location: &'a BoxLocation,
     solutions: Vec<u8>,
 }
 
-    line: &'a u8,
-    column: &'a u8,
-    region: u8,
-    solutions: Vec<u8>,
+#[derive(Debug, Clone)]
+pub struct InvolvedSolutions<'a> {
+    location: &'a BoxLocation,
+    solutions: &'a Vec<u8>,
+    involved_forward: Vec<&'a BoxLocation>,
 }
 
 ////////////////////////////////////////
@@ -34,42 +35,7 @@ pub fn reduce_solutions(grid_values: &GridValues, missing_boxes: &Vec<BoxLocatio
     let mut missing_boxes_copy = missing_boxes.clone();
 
     let sols = get_solutions_complexity_sorted(grid_values, missing_boxes);
-
-    // TODO externalize as it's too usefull
-    for (index, sol) in sols.clone().into_iter().enumerate() {
-        let SortedSolution {
-            location:
-                BoxLocation {
-                    line,
-                    column,
-                    region,
-                },
-            solutions,
-        } = sol;
-
-        println!(
-            "{} = [{}:{}]({}) -> {:?}",
-            index, line, column, region, solutions
-        );
-
-        let mut involved_forward_boxes_indices = vec![];
-
-        if index + 1 < sols.len() {
-            for other_box_index in (index + 1)..sols.len() {
-                let other_box_location = sols[other_box_index].location;
-
-                let same_line = other_box_location.line == *line;
-                let same_col = other_box_location.column == *column;
-                let same_region = other_box_location.region == *region;
-
-                if same_line | same_col | same_region {
-                    involved_forward_boxes_indices.push(other_box_index);
-                }
-            }
-        }
-
-        println!("\t{:?}", involved_forward_boxes_indices)
-    }
+    let with_involved = get_involved_solutions(&sols);
 
     // TODO check in line col region which values doesn't intersect
 
@@ -81,6 +47,59 @@ pub fn reduce_solutions(grid_values: &GridValues, missing_boxes: &Vec<BoxLocatio
     //     .position(|x| *x == *missing)
     //     .unwrap();
     // missing_boxes_copy.remove(index);
+}
+
+/// For each box location, find which other boxes will be involved in a forward way, which means
+/// that if the vector passed says a location A comes before an other location B, A will mention B but
+/// not the other way arround
+pub fn get_involved_solutions<'a>(
+    box_solutions: &'a Vec<SortedSolution>,
+) -> Vec<InvolvedSolutions<'a>> {
+    let mut to_return = vec![];
+
+    for (index, sol) in box_solutions.iter().enumerate() {
+        let SortedSolution {
+            location,
+            solutions,
+        } = sol;
+        let BoxLocation {
+            line,
+            column,
+            region,
+        } = location;
+
+        println!(
+            "{} = [{}:{}]({}) -> {:?}",
+            index, line, column, region, solutions
+        );
+
+        let mut involved_forward_boxes_indices = vec![];
+
+        if index + 1 < box_solutions.len() {
+            for other_box_index in (index + 1)..box_solutions.len() {
+                let other_box_location = box_solutions[other_box_index].location;
+
+                let same_line = other_box_location.line == *line;
+                let same_col = other_box_location.column == *column;
+                let same_region = other_box_location.region == *region;
+
+                if same_line | same_col | same_region {
+                    involved_forward_boxes_indices.push(other_box_location);
+                }
+            }
+        }
+
+        println!("\t{:?}", involved_forward_boxes_indices);
+        let combo = InvolvedSolutions {
+            location,
+            solutions,
+            involved_forward: involved_forward_boxes_indices,
+        };
+
+        to_return.push(combo);
+    }
+
+    to_return
 }
 
 /// Returns boxes, regions and solutions ordered by their number of possibilities (asc)
