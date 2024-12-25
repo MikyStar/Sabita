@@ -8,7 +8,7 @@ _'Sabi' (さび) means 'rust' in japanese_
 
 ### Commands
 
-> Many aliases and sequences are handled through [cargo-make](https://crates.io/crates/cargo-make)
+> Many aliases and sequences are handled through [cargo-make](https://crates.io/crates/cargo-make) *you will need to install it*
 
 ```sh
 cargo run # Builds and run the project
@@ -25,6 +25,9 @@ cargo test # Run all unit tests
 cargo test <file without extension> # Run specific test file
 cargo test <specific function name> # Run specific test function
 
+cargo add <package> [--dev] # Install a proect dependency (or a dev dependency)
+cargo install <package> # Install a system wide dependency
+
 cargo doc # Generates HTML documentation
 
 cargo clean # Remove 'targer' directory (build artifacts, doc ...)
@@ -32,4 +35,4 @@ cargo clean # Remove 'targer' directory (build artifacts, doc ...)
 
 ### Git hooks
 
-Git hooks are handled with [rusty-hook](https://github.com/swellaby/rusty-hook)
+Git hooks are handled with [rusty-hook](https://github.com/swellaby/rusty-hook), to enable them after a fresh install, run `cargo build`
