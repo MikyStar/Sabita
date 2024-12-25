@@ -49,6 +49,15 @@ pub fn reduce_solutions(grid_values: &GridValues, missing_boxes: &Vec<BoxLocatio
     // missing_boxes_copy.remove(index);
 }
 
+pub fn sort_involved_solutions<'a>(
+    box_with_involved: Vec<InvolvedSolutions<'a>>
+) -> Vec<InvolvedSolutions<'a>> {
+    // TODO group involved by number of solutions (asc) and by number of involved boxes
+
+    // TODO maybe this function makes the first sorting (get_solutions_complexity_sorted) useless and
+    // maybe only this one is needed
+}
+
 /// For each box location, find which other boxes will be involved in a forward way, which means
 /// that if the vector passed says a location A comes before an other location B, A will mention B but
 /// not the other way arround
@@ -73,7 +82,7 @@ pub fn get_involved_solutions<'a>(
             index, line, column, region, solutions
         );
 
-        let mut involved_forward_boxes_indices = vec![];
+        let mut involved_forward = vec![];
 
         if index + 1 < box_solutions.len() {
             for other_box_index in (index + 1)..box_solutions.len() {
@@ -84,16 +93,16 @@ pub fn get_involved_solutions<'a>(
                 let same_region = other_box_location.region == *region;
 
                 if same_line | same_col | same_region {
-                    involved_forward_boxes_indices.push(other_box_location);
+                    involved_forward.push(other_box_location);
                 }
             }
         }
 
-        println!("\t{:?}", involved_forward_boxes_indices);
+        println!("\t{:?}", involved_forward);
         let combo = InvolvedSolutions {
             location,
             solutions,
-            involved_forward: involved_forward_boxes_indices,
+            involved_forward,
         };
 
         to_return.push(combo);
