@@ -33,9 +33,8 @@ impl<'a> fmt::Display for SortedSolution<'a> {
 
 #[derive(Debug, Clone)]
 pub struct InvolvedSolutions<'a> {
-    location: &'a BoxLocation,
-    solutions: &'a Vec<u8>,
-    involved_forward: Vec<&'a BoxLocation>,
+    current_box: &'a SortedSolution<'a>,
+    involved_forward: Vec<&'a SortedSolution<'a>>,
 }
 
 ////////////////////////////////////////
@@ -46,6 +45,48 @@ pub fn reduce_solutions(grid_values: &GridValues, missing_boxes: &Vec<BoxLocatio
 
     let sols = get_solutions_complexity_sorted(grid_values, missing_boxes);
     let with_involved = get_involved_solutions(&sols);
+
+    println!();
+
+    for box_sol in with_involved {
+        let InvolvedSolutions {
+            current_box:
+                SortedSolution {
+                    location: current_box_location,
+                    solutions: current_box_solutions,
+                },
+            involved_forward,
+        } = box_sol;
+
+        let mut not_intersecting_solutions = vec![];
+
+        // Skip unnecessary involvement checks
+        if current_box_solutions.len() <= 1 {
+            continue;
+        }
+
+        for current_box_solution in current_box_solutions {
+            for forward_box in involved_forward.clone() {
+                let SortedSolution {
+                    solutions: forward_box_solutions,
+                    ..
+                } = forward_box;
+
+                let is_solution_also_in_forward =
+                    forward_box_solutions.contains(&current_box_solution);
+
+                let already_noted = not_intersecting_solutions.contains(&current_box_solution);
+
+                if !is_solution_also_in_forward & !already_noted {
+                    println!(
+                        "box {}, sol {}, notIn {:?}",
+                        current_box_location, current_box_solution, forward_box_solutions
+                    );
+                    not_intersecting_solutions.push(current_box_solution);
+                }
+            }
+        }
+    }
 
     // TODO check in line col region which values doesn't intersect
 
@@ -60,12 +101,15 @@ pub fn reduce_solutions(grid_values: &GridValues, missing_boxes: &Vec<BoxLocatio
 }
 
 pub fn sort_involved_solutions<'a>(
-    box_with_involved: Vec<InvolvedSolutions<'a>>
+    box_with_involved: Vec<InvolvedSolutions<'a>>,
 ) -> Vec<InvolvedSolutions<'a>> {
+    // TODO after solutions reduced
     // TODO group involved by number of solutions (asc) and by number of involved boxes
 
     // TODO maybe this function makes the first sorting (get_solutions_complexity_sorted) useless and
     // maybe only this one is needed
+
+    unimplemented!()
 }
 
 /// For each box location, find which other boxes will be involved in a forward way, which means
@@ -77,35 +121,41 @@ pub fn get_involved_solutions<'a>(
     let mut to_return = vec![];
 
     for (index, sol) in box_solutions.iter().enumerate() {
-        let SortedSolution { location, .. } = sol;
-        let BoxLocation {
-            line,
-            column,
-            region,
-        } = location;
+        let SortedSolution {
+            location:
+                BoxLocation {
+                    line,
+                    column,
+                    region,
+                },
+            ..
+        } = sol;
 
-        println!("{}: {}", index, sol);
+        println!("{index}: {sol}");
 
         let mut involved_forward = vec![];
 
         if index + 1 < box_solutions.len() {
             for other_box_index in (index + 1)..box_solutions.len() {
-                let other_box_location = box_solutions[other_box_index].location;
+                let other_box = &box_solutions[other_box_index];
+                let other_box_location = other_box.location;
 
                 let same_line = other_box_location.line == *line;
                 let same_col = other_box_location.column == *column;
                 let same_region = other_box_location.region == *region;
 
                 if same_line | same_col | same_region {
-                    involved_forward.push(other_box_location);
+                    involved_forward.push(other_box);
                 }
             }
         }
 
-        println!("\t{:?}", involved_forward);
+        for i in involved_forward.clone() {
+            println!("\t{i}");
+        }
+
         let combo = InvolvedSolutions {
-            location,
-            solutions,
+            current_box: sol,
             involved_forward,
         };
 
