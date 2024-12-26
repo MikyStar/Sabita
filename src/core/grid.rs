@@ -2,6 +2,7 @@ use super::constants::LENGTH_DIMENSION;
 use super::validation::{is_column_valid, is_line_valid, is_region_valid};
 
 use std::error::Error;
+use std::fmt;
 
 ////////////////////////////////////////
 
@@ -20,6 +21,15 @@ pub struct BoxLocation {
     pub line: u8,
     pub column: u8,
     pub region: u8,
+}
+
+/// Format how printing with only {} does
+/// Otherwise you'll need to use {:?} to print the structure in a single lie
+/// Or {:#?} to 'pretty' print each attribute on it's own line
+impl fmt::Display for BoxLocation {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "[{}:{}]({})", self.line, self.column, self.region)
+    }
 }
 
 #[derive(Debug)]

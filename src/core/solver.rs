@@ -15,11 +15,21 @@ impl fmt::Display for BoxSolutionNotFound {
     }
 }
 
+//////////
+
 #[derive(Debug, Clone)]
 pub struct SortedSolution<'a> {
     location: &'a BoxLocation,
     solutions: Vec<u8>,
 }
+
+impl<'a> fmt::Display for SortedSolution<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} -> {:?}", self.location, self.solutions)
+    }
+}
+
+//////////
 
 #[derive(Debug, Clone)]
 pub struct InvolvedSolutions<'a> {
@@ -67,20 +77,14 @@ pub fn get_involved_solutions<'a>(
     let mut to_return = vec![];
 
     for (index, sol) in box_solutions.iter().enumerate() {
-        let SortedSolution {
-            location,
-            solutions,
-        } = sol;
+        let SortedSolution { location, .. } = sol;
         let BoxLocation {
             line,
             column,
             region,
         } = location;
 
-        println!(
-            "{} = [{}:{}]({}) -> {:?}",
-            index, line, column, region, solutions
-        );
+        println!("{}: {}", index, sol);
 
         let mut involved_forward = vec![];
 
