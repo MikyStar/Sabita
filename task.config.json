@@ -1,0 +1,10 @@
+{
+  "storageFile": "./tasks/v0.1.0.json",
+  "group": "state",
+  "sort": "desc",
+  "shouldNotPrintAfter": false,
+  "hideCompleted": false,
+  "hideDescription": false,
+  "hideTree": false,
+  "clearBefore": true
+}

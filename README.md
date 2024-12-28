@@ -36,3 +36,7 @@ cargo clean # Remove 'targer' directory (build artifacts, doc ...)
 ### Git hooks
 
 Git hooks are handled with [rusty-hook](https://github.com/swellaby/rusty-hook), to enable them after a fresh install, run `cargo build`
+
+## Tasks
+
+Using [CLI-Manager](https://github.com/MikyStar/CLI-Manager) for task handling.
