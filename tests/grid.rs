@@ -187,6 +187,24 @@ mod grid_tests {
     // Remove random values
 
     #[test]
+    #[should_panic(expected = "Can not remove that much values")]
+    fn invalid_remove_random_value_full_grid() {
+        let values = grid_values_array_to_vec(GRID_VALUES_2);
+        let mut grid = Grid::new(values.clone());
+
+        grid.remove_random_values(81);
+    }
+
+    #[test]
+    #[should_panic(expected = "Can not remove that much values")]
+    fn invalid_remove_random_value_above() {
+        let values = grid_values_array_to_vec(GRID_VALUES_2);
+        let mut grid = Grid::new(values.clone());
+
+        grid.remove_random_values(90);
+    }
+
+    #[test]
     fn remove_1_random_value() {
         let values = grid_values_array_to_vec(GRID_VALUES_1);
         let mut grid = Grid::new(values.clone());
@@ -206,6 +224,20 @@ mod grid_tests {
         let mut grid = Grid::new(values.clone());
 
         let nb_to_remove = 20;
+
+        grid.remove_random_values(nb_to_remove);
+        let missing = grid.locate_missing_box();
+
+        assert_eq!(missing.len(), nb_to_remove as usize);
+        assert_ne!(values, grid.get_values());
+    }
+
+    #[test]
+    fn remove_80_random_value() {
+        let values = grid_values_array_to_vec(GRID_VALUES_2);
+        let mut grid = Grid::new(values.clone());
+
+        let nb_to_remove = 80;
 
         grid.remove_random_values(nb_to_remove);
         let missing = grid.locate_missing_box();

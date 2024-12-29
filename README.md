@@ -22,7 +22,7 @@ cargo clippy --fix # Fix auto fixable
 cargo build # Only build it
 
 cargo test # Run all unit tests
-cargo test <file without extension> # Run specific test file
+cargo test <file without extension> # Run specific test file inside the 'tests' folder (don't write it in path)
 cargo test <specific function name> # Run specific test function
 
 cargo add <package> [--dev] # Install a proect dependency (or a dev dependency)

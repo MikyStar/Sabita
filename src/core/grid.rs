@@ -120,8 +120,12 @@ impl Grid {
     }
 
     pub fn remove_random_values(&mut self, nb_to_remove: u8) -> Vec<BoxLocation> {
+        if nb_to_remove >= LENGTH_DIMENSION * LENGTH_DIMENSION {
+            panic!("Can not remove that much values")
+        }
+
         let mut rng = rand::thread_rng();
-        let pos = Uniform::from((TO_BE_SOLVED + 1)..LENGTH_DIMENSION);
+        let pos = Uniform::from(TO_BE_SOLVED..LENGTH_DIMENSION);
 
         let mut loc_removed = vec![];
 
