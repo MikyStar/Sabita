@@ -1,20 +1,13 @@
 use super::constants::LENGTH_DIMENSION;
-use super::validation::{is_column_valid, is_line_valid, is_region_valid};
+use super::solver::solve;
+use super::validation::validate;
 
 use std::error::Error;
 use std::fmt;
 
 ////////////////////////////////////////
 
-#[derive(Debug)]
-enum BoxTypes {
-    Given,
-    ToBeSolved,
-    Hypothesis,
-}
-
 pub type GridValues = Vec<Vec<u8>>;
-type GridTypes = Vec<Vec<BoxTypes>>;
 
 #[derive(Debug, Clone)]
 pub struct BoxLocation {
@@ -35,7 +28,6 @@ impl fmt::Display for BoxLocation {
 #[derive(Debug)]
 pub struct Grid {
     values: GridValues,
-    types: GridTypes,
 }
 
 ////////////////////
@@ -45,8 +37,6 @@ impl Grid {
     // Constructor
 
     pub fn new(values: GridValues) -> Self {
-        let mut types: GridTypes = vec![];
-
         if values.len() != LENGTH_DIMENSION.into() {
             panic!("Wrong number of lines: {}", values.len());
         }
@@ -54,12 +44,10 @@ impl Grid {
         for (row_index, row) in values.iter().enumerate() {
             if row.len() != LENGTH_DIMENSION.into() {
                 panic!(
-                    "Row index {} has a different number of columns than {}",
+                    "Line index {} has a different number of columns than {}",
                     row_index, LENGTH_DIMENSION
                 )
             }
-
-            let mut line = vec![];
 
             for (column_index, value) in row.iter().enumerate() {
                 if row.len() > LENGTH_DIMENSION.into() {
@@ -75,48 +63,15 @@ impl Grid {
                         value, row_index, column_index
                     );
                 }
-
-                line.push(if *value > 0 {
-                    BoxTypes::Given
-                } else {
-                    BoxTypes::ToBeSolved
-                });
-            }
-
-            types.push(line);
-        }
-
-        for index in 0..LENGTH_DIMENSION {
-            let (is_line_valid, wrong_line_value) = is_line_valid(&values, &index);
-            let (is_column_valid, wrong_column_value) = is_column_valid(&values, &index);
-            let (is_region_valid, wrong_region_value) = is_region_valid(&values, &index);
-
-            if !is_line_valid {
-                panic!(
-                    "Row index {} is not valid, duplicate value {}",
-                    index,
-                    wrong_line_value.unwrap()
-                );
-            }
-
-            if !is_column_valid {
-                panic!(
-                    "Column index {} is not valid, duplicate value {}",
-                    index,
-                    wrong_column_value.unwrap()
-                );
-            }
-
-            if !is_region_valid {
-                panic!(
-                    "Region index {} is not valid, duplicate value {}",
-                    index,
-                    wrong_region_value.unwrap()
-                );
             }
         }
 
-        Grid { values, types }
+        match validate(&values) {
+            Ok(_) => {}
+            Err(err) => panic!("{err}"),
+        }
+
+        Grid { values }
     }
 
     //////////
@@ -155,6 +110,12 @@ impl Grid {
 
     pub fn print(&self) {
         print_2d_vec(&self.get_values());
+    }
+
+    pub fn solve(&self) {
+        let missing_boxes = self.locate_missing_box();
+
+        solve(&self.get_values(), &missing_boxes);
     }
 }
 

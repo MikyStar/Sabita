@@ -1,7 +1,76 @@
 use super::constants::{LENGTH_DIMENSION, TO_BE_SOLVED};
 use super::grid::{region_to_location, GridValues};
 
+use std::fmt;
+
 ////////////////////////////////////////
+
+#[derive(Debug)]
+pub enum ValidationErrorType {
+    LINE,
+    COLUMN,
+    REGION,
+}
+
+#[derive(Debug)]
+pub struct ValidationError {
+    err_type: ValidationErrorType,
+    index: u8,
+    duplicated_pos: u8,
+}
+
+impl fmt::Display for ValidationError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let zone = match self.err_type {
+            ValidationErrorType::LINE => "Line",
+            ValidationErrorType::COLUMN => "Column",
+            ValidationErrorType::REGION => "Region",
+        };
+
+        write!(
+            f,
+            "{} index {} is not valid, duplicate value {}",
+            zone, self.index, self.duplicated_pos
+        )
+    }
+}
+
+////////////////////////////////////////
+
+/// Checks no duplication of values for line, columns and row
+pub fn validate(values: &GridValues) -> Result<(), ValidationError> {
+    for index in 0..LENGTH_DIMENSION {
+        let (is_line_valid, wrong_line_value) = is_line_valid(&values, &index);
+        let (is_column_valid, wrong_column_value) = is_column_valid(&values, &index);
+        let (is_region_valid, wrong_region_value) = is_region_valid(&values, &index);
+
+        if !is_line_valid {
+            return Err(ValidationError {
+                err_type: ValidationErrorType::LINE,
+                index,
+                duplicated_pos: wrong_line_value.unwrap(),
+            });
+        }
+
+        if !is_column_valid {
+            return Err(ValidationError {
+                err_type: ValidationErrorType::COLUMN,
+                index,
+                duplicated_pos: wrong_column_value.unwrap(),
+            });
+        }
+
+        if !is_region_valid {
+            return Err(ValidationError {
+                err_type: ValidationErrorType::REGION,
+                index,
+                duplicated_pos: wrong_region_value.unwrap(),
+            });
+        }
+    }
+
+    Ok(())
+}
 
 fn handle_index_out_of_bound(index: &u8) {
     if *index > LENGTH_DIMENSION {

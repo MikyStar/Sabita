@@ -2,7 +2,7 @@ use crate::core::grid::print_2d_vec;
 
 use super::constants::{LENGTH_DIMENSION, TO_BE_SOLVED};
 use super::grid::{BoxLocation, GridValues};
-use super::validation::{is_column_valid, is_line_valid, is_region_valid};
+use super::validation::validate;
 
 use std::fmt;
 
@@ -192,21 +192,11 @@ pub fn get_box_solutions(
         let mut grid_to_test = grid_values.clone();
         grid_to_test[location.line as usize][location.column as usize] = possibility;
 
-        let mut was_an_error_found = false;
-
-        for index in 0..LENGTH_DIMENSION {
-            let is_line_valid = is_line_valid(&grid_to_test, &index).0;
-            let is_column_valid = is_column_valid(&grid_to_test, &index).0;
-            let is_region_valid = is_region_valid(&grid_to_test, &index).0;
-
-            if !is_line_valid | !is_column_valid | !is_region_valid {
-                was_an_error_found = true;
-                break;
+        match validate(&grid_to_test) {
+            Ok(_) => {
+                answers.push(possibility);
             }
-        }
-
-        if !was_an_error_found {
-            answers.push(possibility)
+            Err(_) => {}
         }
     }
 

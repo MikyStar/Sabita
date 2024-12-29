@@ -46,7 +46,7 @@ mod grid_tests {
     }
 
     #[test]
-    #[should_panic(expected = "Row index 0 has a different number of columns than 9")]
+    #[should_panic(expected = "Line index 0 has a different number of columns than 9")]
     fn too_few_columns0() {
         Grid::new(vec![
             vec![1, 2, 3, 4, 5, 6, 7, 8],
@@ -62,7 +62,7 @@ mod grid_tests {
     }
 
     #[test]
-    #[should_panic(expected = "Row index 5 has a different number of columns than 9")]
+    #[should_panic(expected = "Line index 5 has a different number of columns than 9")]
     fn too_few_columns5() {
         Grid::new(vec![
             vec![3, 9, 1, 2, 8, 6, 5, 7, 4],
@@ -96,7 +96,7 @@ mod grid_tests {
     // Line checks
 
     #[test]
-    #[should_panic(expected = "Row index 0 is not valid, duplicate value 3")]
+    #[should_panic(expected = "Line index 0 is not valid, duplicate value 3")]
     fn invalid_line0() {
         Grid::new(vec![
             vec![3, 3, 1, 2, 8, 6, 5, 7, 4],
@@ -112,7 +112,7 @@ mod grid_tests {
     }
 
     #[test]
-    #[should_panic(expected = "Row index 7 is not valid, duplicate value 6")]
+    #[should_panic(expected = "Line index 7 is not valid, duplicate value 6")]
     fn invalid_line7() {
         Grid::new(vec![
             vec![3, 9, 1, 2, 8, 6, 5, 7, 4],

@@ -1,6 +1,5 @@
 use sabi::core::constants::TO_BE_SOLVED as tbd;
 use sabi::core::grid::Grid;
-use sabi::core::solver::solve;
 
 ////////////////////////////////////////
 
@@ -33,7 +32,5 @@ fn main() {
     grid.print();
 
     println!("\nSolutions");
-    let missing_boxes = grid.locate_missing_box();
-
-    solve(&grid.get_values(), &missing_boxes);
+    grid.solve();
 }
