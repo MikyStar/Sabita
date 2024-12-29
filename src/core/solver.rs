@@ -2,7 +2,7 @@ use crate::core::grid::print_2d_vec;
 
 use super::constants::{LENGTH_DIMENSION, TO_BE_SOLVED};
 use super::grid::{BoxLocation, GridValues};
-use super::validation::validate;
+use super::validation::{is_column_valid, is_line_valid, is_region_valid, validate};
 
 use std::fmt;
 
@@ -39,9 +39,23 @@ pub struct InvolvedSolutions<'a> {
     involved_forward: Vec<SortedSolution<'a>>,
 }
 
+//////////
+
+#[derive(Debug)]
+pub struct NoSudokuSolutionFound;
+
+impl<'a> fmt::Display for NoSudokuSolutionFound {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "No Sudoku solution found for the provided grid")
+    }
+}
+
 ////////////////////////////////////////
 
-pub fn solve(grid_values: &GridValues, missing_boxes: &Vec<BoxLocation>) {
+pub fn solve(
+    grid_values: &GridValues,
+    missing_boxes: &Vec<BoxLocation>,
+) -> Result<GridValues, NoSudokuSolutionFound> {
     let mut grid_copy = grid_values.clone();
 
     let sols = get_solutions_complexity_sorted(grid_values, missing_boxes);
@@ -49,7 +63,11 @@ pub fn solve(grid_values: &GridValues, missing_boxes: &Vec<BoxLocation>) {
 
     println!();
 
-    for box_sol in with_involved {
+    let mut involved_index = 0;
+    let mut involved_index = 0;
+
+    while involved_index < with_involved.len() {
+        let box_sol = with_involved[involved_index].clone();
         let InvolvedSolutions {
             current_box:
                 SortedSolution {
@@ -60,43 +78,100 @@ pub fn solve(grid_values: &GridValues, missing_boxes: &Vec<BoxLocation>) {
         } = box_sol;
         let mut involved_forward_copy = involved_forward;
 
-        for curr_sol in current_box_solutions {
-            println!("before");
-            print_2d_vec(&grid_copy);
-            println!("{current_box_location} {curr_sol}");
-            for i in involved_forward_copy.clone() {
-                println!("\t{i}");
-            }
+        let mut sol_found = false;
 
-            appy_sol(
+        for curr_sol in current_box_solutions {
+            let affected_sol_indices = appy_sol(
                 &mut grid_copy,
                 &mut involved_forward_copy,
                 current_box_location,
                 curr_sol,
             );
 
-            println!("after");
+            if current_box_solutions.len() == 1 {
+                sol_found = true;
+                break;
+            }
+
+            // TODO break out of loop after each check
+            let is_line_valid = is_line_valid(&grid_copy, &current_box_location.line).0;
+            let is_column_valid = is_column_valid(&grid_copy, &current_box_location.column).0;
+            let is_region_valid = is_region_valid(&grid_copy, &current_box_location.region).0;
+
+            let is_valid = is_line_valid & is_column_valid & is_region_valid;
+
+            if is_valid {
+                sol_found = true;
+                break;
+            }
+
+            println!("WILL ROLLBACK");
             print_2d_vec(&grid_copy);
-            println!("{current_box_location} {curr_sol}");
+            println!("{current_box_location} {curr_sol} {affected_sol_indices:?}");
             for i in involved_forward_copy.clone() {
                 println!("\t{i}");
             }
+
+            rollback_sol(
+                &mut grid_copy,
+                &mut involved_forward_copy,
+                current_box_location,
+                affected_sol_indices,
+                curr_sol,
+            );
+            sol_found = false;
+        }
+
+        if !sol_found {
+            involved_index -= 1;
+        } else {
+            involved_index += 1;
         }
     }
+
+    Ok(grid_copy)
 }
 
 /// Updates the grid with a value at the given position and remove that value from the involved
 /// boxes possible solutions
+/// Returns affected involved_boxes index
 fn appy_sol(
     grid_copy: &mut GridValues,
     involved_boxes: &mut Vec<SortedSolution>,
     loc: &BoxLocation,
     value: &u8,
-) -> () {
+) -> Vec<usize> {
     grid_copy[loc.line as usize][loc.column as usize] = *value;
 
-    for involved in involved_boxes {
-        involved.solutions.retain(|x| *x != *value);
+    // involved_boxes
+
+    let mut affected_indices = vec![];
+
+    for (box_index, involved) in involved_boxes.into_iter().enumerate() {
+        for (sol_index, sol) in involved.solutions.clone().into_iter().enumerate() {
+            if sol == *value {
+                involved.solutions.remove(sol_index);
+                affected_indices.push(box_index);
+            }
+        }
+    }
+
+    affected_indices
+}
+
+/// Updates the grid with to be solved at the given location and put back the possibility in
+/// involved solutions
+fn rollback_sol(
+    grid_copy: &mut GridValues,
+    involved_boxes: &mut Vec<SortedSolution>,
+    loc: &BoxLocation,
+    affected_box_solutions: Vec<usize>,
+    value: &u8,
+) -> () {
+    grid_copy[loc.line as usize][loc.column as usize] = TO_BE_SOLVED;
+
+    for index in affected_box_solutions {
+        involved_boxes[index].solutions.push(*value);
     }
 }
 
