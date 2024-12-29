@@ -1,7 +1,9 @@
 #[cfg(test)]
 mod grid_tests {
+    use sabi::assets::full_grid::{GRID_VALUES_1, GRID_VALUES_2};
     use sabi::core::constants::TO_BE_SOLVED;
     use sabi::core::grid::Grid;
+    use sabi::utils::grid_utils::grid_values_array_to_vec;
 
     ////////////////////
     // Valid grid
@@ -179,5 +181,36 @@ mod grid_tests {
             vec![TO_BE_SOLVED, 3, 8, 1, 4, 2, 5, 9, 7],
             vec![7, 5, 6, 8, 9, TO_BE_SOLVED, 3, 4, 1],
         ]);
+    }
+
+    ////////////////////
+    // Remove random values
+
+    #[test]
+    fn remove_1_random_value() {
+        let values = grid_values_array_to_vec(GRID_VALUES_1);
+        let mut grid = Grid::new(values.clone());
+
+        let nb_to_remove = 1;
+
+        grid.remove_random_values(nb_to_remove);
+        let missing = grid.locate_missing_box();
+
+        assert_eq!(missing.len(), nb_to_remove as usize);
+        assert_ne!(values, grid.get_values());
+    }
+
+    #[test]
+    fn remove_20_random_value() {
+        let values = grid_values_array_to_vec(GRID_VALUES_2);
+        let mut grid = Grid::new(values.clone());
+
+        let nb_to_remove = 20;
+
+        grid.remove_random_values(nb_to_remove);
+        let missing = grid.locate_missing_box();
+
+        assert_eq!(missing.len(), nb_to_remove as usize);
+        assert_ne!(values, grid.get_values());
     }
 }

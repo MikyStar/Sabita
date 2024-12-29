@@ -1,7 +1,8 @@
-use super::constants::LENGTH_DIMENSION;
-use super::solver::solve;
+use super::constants::{LENGTH_DIMENSION, TO_BE_SOLVED};
+use super::solver::{solve, NoSudokuSolutionFound};
 use super::validation::validate;
 
+use rand::distributions::{Distribution, Uniform};
 use std::error::Error;
 use std::fmt;
 
@@ -22,6 +23,16 @@ pub struct BoxLocation {
 impl fmt::Display for BoxLocation {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "[{}:{}]({})", self.line, self.column, self.region)
+    }
+}
+
+impl PartialEq for BoxLocation {
+    fn eq(&self, other: &Self) -> bool {
+        let same_line = self.line == other.line;
+        let same_column = self.column == other.column;
+        let same_region = self.region == other.region;
+
+        same_line & same_column & same_region
     }
 }
 
@@ -108,14 +119,40 @@ impl Grid {
         locations
     }
 
+    pub fn remove_random_values(&mut self, nb_to_remove: u8) -> Vec<BoxLocation> {
+        let mut rng = rand::thread_rng();
+        let pos = Uniform::from((TO_BE_SOLVED + 1)..LENGTH_DIMENSION);
+
+        let mut loc_removed = vec![];
+
+        while loc_removed.len() < nb_to_remove.into() {
+            let line = pos.sample(&mut rng);
+            let column = pos.sample(&mut rng);
+
+            let location = BoxLocation {
+                line,
+                column,
+                region: location_to_region(&line, &column).unwrap(),
+            };
+
+            if !loc_removed.contains(&location) {
+                self.values[line as usize][column as usize] = TO_BE_SOLVED;
+
+                loc_removed.push(location);
+            }
+        }
+
+        loc_removed
+    }
+
     pub fn print(&self) {
         print_2d_vec(&self.get_values());
     }
 
-    pub fn solve(&self) {
+    pub fn solve(&self) -> Result<GridValues, NoSudokuSolutionFound> {
         let missing_boxes = self.locate_missing_box();
 
-        solve(&self.get_values(), &missing_boxes);
+        return solve(&self.get_values(), &missing_boxes);
     }
 }
 
