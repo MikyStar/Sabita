@@ -1,3 +1,5 @@
+use crate::core::grid::print_2d_vec;
+
 use super::constants::{LENGTH_DIMENSION, TO_BE_SOLVED};
 use super::grid::{BoxLocation, GridValues};
 use super::validation::{is_column_valid, is_line_valid, is_region_valid};
@@ -34,14 +36,13 @@ impl<'a> fmt::Display for SortedSolution<'a> {
 #[derive(Debug, Clone)]
 pub struct InvolvedSolutions<'a> {
     current_box: &'a SortedSolution<'a>,
-    involved_forward: Vec<&'a SortedSolution<'a>>,
+    involved_forward: Vec<SortedSolution<'a>>,
 }
 
 ////////////////////////////////////////
 
-pub fn reduce_solutions(grid_values: &GridValues, missing_boxes: &Vec<BoxLocation>) {
+pub fn solve(grid_values: &GridValues, missing_boxes: &Vec<BoxLocation>) {
     let mut grid_copy = grid_values.clone();
-    let mut missing_boxes_copy = missing_boxes.clone();
 
     let sols = get_solutions_complexity_sorted(grid_values, missing_boxes);
     let with_involved = get_involved_solutions(&sols);
@@ -57,59 +58,46 @@ pub fn reduce_solutions(grid_values: &GridValues, missing_boxes: &Vec<BoxLocatio
                 },
             involved_forward,
         } = box_sol;
+        let mut involved_forward_copy = involved_forward;
 
-        let mut not_intersecting_solutions = vec![];
+        for curr_sol in current_box_solutions {
+            println!("before");
+            print_2d_vec(&grid_copy);
+            println!("{current_box_location} {curr_sol}");
+            for i in involved_forward_copy.clone() {
+                println!("\t{i}");
+            }
 
-        // Skip unnecessary involvement checks
-        if current_box_solutions.len() <= 1 {
-            continue;
-        }
+            appy_sol(
+                &mut grid_copy,
+                &mut involved_forward_copy,
+                current_box_location,
+                curr_sol,
+            );
 
-        for current_box_solution in current_box_solutions {
-            for forward_box in involved_forward.clone() {
-                let SortedSolution {
-                    solutions: forward_box_solutions,
-                    ..
-                } = forward_box;
-
-                let is_solution_also_in_forward =
-                    forward_box_solutions.contains(&current_box_solution);
-
-                let already_noted = not_intersecting_solutions.contains(&current_box_solution);
-
-                if !is_solution_also_in_forward & !already_noted {
-                    println!(
-                        "box {}, sol {}, notIn {:?}",
-                        current_box_location, current_box_solution, forward_box_solutions
-                    );
-                    not_intersecting_solutions.push(current_box_solution);
-                }
+            println!("after");
+            print_2d_vec(&grid_copy);
+            println!("{current_box_location} {curr_sol}");
+            for i in involved_forward_copy.clone() {
+                println!("\t{i}");
             }
         }
     }
-
-    // TODO check in line col region which values doesn't intersect
-
-    // remove item in array
-    // grid_copy[missing[0] as usize][missing[1] as usize] = solutions[0];
-    //
-    // let index = missing_boxes_copy
-    //     .iter()
-    //     .position(|x| *x == *missing)
-    //     .unwrap();
-    // missing_boxes_copy.remove(index);
 }
 
-pub fn sort_involved_solutions<'a>(
-    box_with_involved: Vec<InvolvedSolutions<'a>>,
-) -> Vec<InvolvedSolutions<'a>> {
-    // TODO after solutions reduced
-    // TODO group involved by number of solutions (asc) and by number of involved boxes
+/// Updates the grid with a value at the given position and remove that value from the involved
+/// boxes possible solutions
+fn appy_sol(
+    grid_copy: &mut GridValues,
+    involved_boxes: &mut Vec<SortedSolution>,
+    loc: &BoxLocation,
+    value: &u8,
+) -> () {
+    grid_copy[loc.line as usize][loc.column as usize] = *value;
 
-    // TODO maybe this function makes the first sorting (get_solutions_complexity_sorted) useless and
-    // maybe only this one is needed
-
-    unimplemented!()
+    for involved in involved_boxes {
+        involved.solutions.retain(|x| *x != *value);
+    }
 }
 
 /// For each box location, find which other boxes will be involved in a forward way, which means
@@ -145,7 +133,7 @@ pub fn get_involved_solutions<'a>(
                 let same_region = other_box_location.region == *region;
 
                 if same_line | same_col | same_region {
-                    involved_forward.push(other_box);
+                    involved_forward.push(other_box.clone());
                 }
             }
         }
