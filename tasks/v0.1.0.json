@@ -73,6 +73,12 @@
                             "timestamp": "29/12/2024"
                         }
                     ]
+                },
+                {
+                    "name": "improve the apply to remove the used value in everyreference to the boxes involved, might need to change the typing to references",
+                    "state": "todo",
+                    "id": 12,
+                    "timestamp": "30/12/2024"
                 }
             ]
         },
@@ -85,7 +91,7 @@
             "subtasks": [
                 {
                     "name": "can set a specific number of missing box or none",
-                    "state": "todo",
+                    "state": "wip",
                     "id": 7,
                     "timestamp": "29/12/2024"
                 },
