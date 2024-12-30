@@ -1,0 +1,121 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'sabi'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=sabi"
+        ],
+        "filter": {
+          "name": "sabi",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'sabi'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=sabi",
+          "--package=sabi"
+        ],
+        "filter": {
+          "name": "sabi",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'sabi'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=sabi",
+          "--package=sabi"
+        ],
+        "filter": {
+          "name": "sabi",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug integration test 'grid'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--test=grid",
+          "--package=sabi"
+        ],
+        "filter": {
+          "name": "grid",
+          "kind": "test"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug integration test 'main'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--test=main",
+          "--package=sabi"
+        ],
+        "filter": {
+          "name": "main",
+          "kind": "test"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug integration test 'solver'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--test=solver",
+          "--package=sabi"
+        ],
+        "filter": {
+          "name": "solver",
+          "kind": "test"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}
