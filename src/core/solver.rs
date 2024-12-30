@@ -64,7 +64,7 @@ pub fn solve(
     println!();
 
     let mut involved_index = 0;
-    let mut involved_index = 0;
+    let mut solution_index_by_box_index: Vec<(usize, usize)> = vec![];
 
     while involved_index < with_involved.len() {
         let box_sol = with_involved[involved_index].clone();
@@ -74,57 +74,100 @@ pub fn solve(
                     location: current_box_location,
                     solutions: current_box_solutions,
                 },
-            involved_forward,
+            mut involved_forward,
         } = box_sol;
-        let mut involved_forward_copy = involved_forward;
 
         let mut sol_found = false;
 
-        for curr_sol in current_box_solutions {
-            let affected_sol_indices = appy_sol(
-                &mut grid_copy,
-                &mut involved_forward_copy,
-                current_box_location,
-                curr_sol,
-            );
+        let start = match solution_index_by_box_index
+            .iter()
+            .position(|&r| r.0 == involved_index)
+        {
+            Some(index) => solution_index_by_box_index[index].1,
+            None => 0,
+        };
 
-            if current_box_solutions.len() == 1 {
-                sol_found = true;
-                break;
+        println!("---------------------");
+        println!("{involved_index} ==> {}", box_sol.current_box);
+        for i in involved_forward.clone() {
+            println!("\t{i}");
+        }
+
+        print_2d_vec(&grid_copy);
+
+        if start < current_box_solutions.len() {
+            for curr_sol_index in start..current_box_solutions.len() {
+                let curr_sol = &current_box_solutions[curr_sol_index];
+
+                println!("\ttesting sol {curr_sol}");
+
+                let affected_sol_indices = appy_sol(
+                    &mut grid_copy,
+                    &mut involved_forward,
+                    current_box_location,
+                    curr_sol,
+                );
+
+                // TODO break out of loop after each check
+                let is_line_valid = is_line_valid(&grid_copy, &current_box_location.line).0;
+                let is_column_valid = is_column_valid(&grid_copy, &current_box_location.column).0;
+                let is_region_valid = is_region_valid(&grid_copy, &current_box_location.region).0;
+
+                let is_valid = is_line_valid & is_column_valid & is_region_valid;
+
+                if is_valid {
+                    println!("\tgood sol");
+                    sol_found = true;
+                    break;
+                }
+
+                // print_2d_vec(&grid_copy);
+
+                if current_box_solutions.len() == 1 {
+                    println!("no more sols available");
+                    return Err(NoSudokuSolutionFound);
+                }
+
+                rollback_sol(
+                    &mut grid_copy,
+                    &mut involved_forward,
+                    current_box_location,
+                    affected_sol_indices,
+                    curr_sol,
+                );
+                sol_found = false;
             }
-
-            // TODO break out of loop after each check
-            let is_line_valid = is_line_valid(&grid_copy, &current_box_location.line).0;
-            let is_column_valid = is_column_valid(&grid_copy, &current_box_location.column).0;
-            let is_region_valid = is_region_valid(&grid_copy, &current_box_location.region).0;
-
-            let is_valid = is_line_valid & is_column_valid & is_region_valid;
-
-            if is_valid {
-                sol_found = true;
-                break;
-            }
-
-            println!("WILL ROLLBACK");
-            print_2d_vec(&grid_copy);
-            println!("{current_box_location} {curr_sol} {affected_sol_indices:?}");
-            for i in involved_forward_copy.clone() {
-                println!("\t{i}");
-            }
-
-            rollback_sol(
-                &mut grid_copy,
-                &mut involved_forward_copy,
-                current_box_location,
-                affected_sol_indices,
-                curr_sol,
-            );
-            sol_found = false;
         }
 
         if !sol_found {
+            println!();
+            println!("*** BACKWARD -> to{}", involved_index - 1);
+
+            if involved_index == 0 {
+                println!("----------- WILL BREAK");
+                println!("{current_box_solutions:?} {solution_index_by_box_index:?}");
+            }
+
             involved_index -= 1;
+
+            match solution_index_by_box_index
+                .iter()
+                .position(|&r| r.0 == involved_index)
+            {
+                Some(index) => {
+                    let matched_val = solution_index_by_box_index[index];
+                    solution_index_by_box_index[index].1 += 1;
+                    solution_index_by_box_index.retain(|&el| el.0 <= matched_val.0);
+                    println!("incrementing {matched_val:?} {solution_index_by_box_index:?}\n",);
+                }
+                None => {
+                    solution_index_by_box_index.push((involved_index, 1));
+                    solution_index_by_box_index.retain(|&el| el.0 <= involved_index);
+                    println!("pushing {involved_index} {solution_index_by_box_index:?}\n");
+                }
+            };
         } else {
+            println!("*** FORWARD -> to{}\n", involved_index + 1);
             involved_index += 1;
         }
     }
