@@ -108,8 +108,6 @@ pub fn solve(
                     curr_sol,
                 );
 
-                // TODO break out of loop after each check
-
                 match validate_new_box(&grid_copy, &current_box_location) {
                     Ok(_) => {
                         println!("\tgood sol");
