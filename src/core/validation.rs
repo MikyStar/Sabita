@@ -1,5 +1,5 @@
 use super::constants::{LENGTH_DIMENSION, TO_BE_SOLVED};
-use super::grid::{region_to_location, GridValues};
+use super::grid::{region_to_location, BoxLocation, GridValues};
 
 use std::fmt;
 
@@ -40,33 +40,60 @@ impl fmt::Display for ValidationError {
 /// Checks no duplication of values for line, columns and row
 pub fn validate(values: &GridValues) -> Result<(), ValidationError> {
     for index in 0..LENGTH_DIMENSION {
-        let (is_line_valid, wrong_line_value) = is_line_valid(&values, &index);
-        let (is_column_valid, wrong_column_value) = is_column_valid(&values, &index);
-        let (is_region_valid, wrong_region_value) = is_region_valid(&values, &index);
-
-        if !is_line_valid {
-            return Err(ValidationError {
-                err_type: ValidationErrorType::LINE,
-                index,
-                duplicated_pos: wrong_line_value.unwrap(),
-            });
+        match validate_new_box(
+            &values,
+            &BoxLocation {
+                line: index,
+                column: index,
+                region: index,
+            },
+        ) {
+            Err(err) => return Err(err),
+            Ok(_) => {}
         }
+    }
 
-        if !is_column_valid {
-            return Err(ValidationError {
-                err_type: ValidationErrorType::COLUMN,
-                index,
-                duplicated_pos: wrong_column_value.unwrap(),
-            });
-        }
+    Ok(())
+}
 
-        if !is_region_valid {
-            return Err(ValidationError {
-                err_type: ValidationErrorType::REGION,
-                index,
-                duplicated_pos: wrong_region_value.unwrap(),
-            });
-        }
+pub fn validate_new_box(
+    values: &GridValues,
+    box_location: &BoxLocation,
+) -> Result<(), ValidationError> {
+    let BoxLocation {
+        line,
+        column,
+        region,
+    } = box_location;
+
+    let (is_line_valid, wrong_line_value) = is_line_valid(&values, line);
+
+    if !is_line_valid {
+        return Err(ValidationError {
+            err_type: ValidationErrorType::LINE,
+            index: *line,
+            duplicated_pos: wrong_line_value.unwrap(),
+        });
+    }
+
+    let (is_column_valid, wrong_column_value) = is_column_valid(&values, column);
+
+    if !is_column_valid {
+        return Err(ValidationError {
+            err_type: ValidationErrorType::COLUMN,
+            index: *column,
+            duplicated_pos: wrong_column_value.unwrap(),
+        });
+    }
+
+    let (is_region_valid, wrong_region_value) = is_region_valid(&values, region);
+
+    if !is_region_valid {
+        return Err(ValidationError {
+            err_type: ValidationErrorType::REGION,
+            index: *region,
+            duplicated_pos: wrong_region_value.unwrap(),
+        });
     }
 
     Ok(())

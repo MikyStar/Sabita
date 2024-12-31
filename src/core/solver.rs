@@ -2,7 +2,7 @@ use crate::core::grid::print_2d_vec;
 
 use super::constants::{LENGTH_DIMENSION, TO_BE_SOLVED};
 use super::grid::{BoxLocation, GridValues};
-use super::validation::{is_column_valid, is_line_valid, is_region_valid, validate};
+use super::validation::{validate, validate_new_box};
 
 use std::fmt;
 
@@ -87,13 +87,13 @@ pub fn solve(
             None => 0,
         };
 
-        println!("---------------------");
-        println!("{involved_index} ==> {}", box_sol.current_box);
-        for i in involved_forward.clone() {
-            println!("\t{i}");
-        }
+        // println!("---------------------");
+        // println!("{involved_index} ==> {}", box_sol.current_box);
+        // for i in involved_forward.clone() {
+        //     println!("\t{i}");
+        // }
 
-        print_2d_vec(&grid_copy);
+        // print_2d_vec(&grid_copy);
 
         if start < current_box_solutions.len() {
             for curr_sol_index in start..current_box_solutions.len() {
@@ -109,16 +109,14 @@ pub fn solve(
                 );
 
                 // TODO break out of loop after each check
-                let is_line_valid = is_line_valid(&grid_copy, &current_box_location.line).0;
-                let is_column_valid = is_column_valid(&grid_copy, &current_box_location.column).0;
-                let is_region_valid = is_region_valid(&grid_copy, &current_box_location.region).0;
 
-                let is_valid = is_line_valid & is_column_valid & is_region_valid;
-
-                if is_valid {
-                    println!("\tgood sol");
-                    sol_found = true;
-                    break;
+                match validate_new_box(&grid_copy, &current_box_location) {
+                    Ok(_) => {
+                        println!("\tgood sol");
+                        sol_found = true;
+                        break;
+                    }
+                    Err(_) => {}
                 }
 
                 // print_2d_vec(&grid_copy);
