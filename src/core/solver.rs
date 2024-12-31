@@ -50,6 +50,11 @@ impl<'a> fmt::Display for NoSudokuSolutionFound {
     }
 }
 
+//////////
+
+/// Associate a box index with it's solution index
+type SolutionStore = Vec<(usize, usize)>;
+
 ////////////////////////////////////////
 
 pub fn solve(
@@ -64,7 +69,7 @@ pub fn solve(
     println!();
 
     let mut involved_index = 0;
-    let mut solution_index_by_box_index: Vec<(usize, usize)> = vec![];
+    let mut store: SolutionStore = vec![];
 
     while involved_index < with_involved.len() {
         let box_sol = with_involved[involved_index].clone();
@@ -77,23 +82,19 @@ pub fn solve(
             mut involved_forward,
         } = box_sol;
 
-        let mut sol_found = false;
+        let mut sol_found_index: Option<usize> = None;
 
-        let start = match solution_index_by_box_index
-            .iter()
-            .position(|&r| r.0 == involved_index)
-        {
-            Some(index) => solution_index_by_box_index[index].1,
+        let start = match search_store(&store, involved_index) {
+            Some(index) => store[index].1,
             None => 0,
         };
 
-        // println!("---------------------");
-        // println!("{involved_index} ==> {}", box_sol.current_box);
+        println!("---------------------");
+        println!("{involved_index} ==> {}", box_sol.current_box);
         // for i in involved_forward.clone() {
         //     println!("\t{i}");
         // }
-
-        // print_2d_vec(&grid_copy);
+        println!("possible sols {current_box_solutions:?}");
 
         if start < current_box_solutions.len() {
             for curr_sol_index in start..current_box_solutions.len() {
@@ -111,13 +112,11 @@ pub fn solve(
                 match validate_new_box(&grid_copy, &current_box_location) {
                     Ok(_) => {
                         println!("\tgood sol");
-                        sol_found = true;
+                        sol_found_index = Some(curr_sol_index);
                         break;
                     }
                     Err(_) => {}
                 }
-
-                // print_2d_vec(&grid_copy);
 
                 if current_box_solutions.len() == 1 {
                     println!("no more sols available");
@@ -131,44 +130,66 @@ pub fn solve(
                     affected_sol_indices,
                     curr_sol,
                 );
-                sol_found = false;
+
+                sol_found_index = None;
             }
+        } else {
+            println!("skipping searching a sol")
         }
 
-        if !sol_found {
-            println!();
-            println!("*** BACKWARD -> to{}", involved_index - 1);
+        match sol_found_index {
+            None => {
+                println!();
+                println!("*** BACKWARD -> to {}", involved_index - 1);
 
-            if involved_index == 0 {
-                println!("----------- WILL BREAK");
-                println!("{current_box_solutions:?} {solution_index_by_box_index:?}");
+                if involved_index == 0 {
+                    println!("----------- WILL BREAK");
+                    println!("{current_box_solutions:?} {store:?}");
+                }
+
+                involved_index -= 1;
+
+                match search_store(&store, involved_index) {
+                    Some(index) => {
+                        let matched_val = store[index];
+                        store[index].1 += 1;
+                        store.retain(|&el| el.0 <= matched_val.0);
+                        println!("incrementing {matched_val:?} {store:?}\n",);
+                    }
+                    None => {
+                        store.push((involved_index, 1));
+                        store.retain(|&el| el.0 <= involved_index);
+                        println!("pushing {involved_index} {store:?}\n");
+                    }
+                };
             }
+            Some(the_sol_index) => {
+                println!();
+                println!("*** FORWARD -> to {}", involved_index + 1);
 
-            involved_index -= 1;
+                match search_store(&store, involved_index) {
+                    Some(index) => {
+                        let matched_val = store[index];
+                        store[index].1 = the_sol_index;
+                        println!("updating found index {matched_val:?} {store:?}\n",);
+                    }
+                    None => {
+                        store.push((involved_index, the_sol_index));
+                        println!("pushing ({involved_index}, {the_sol_index}) {store:?}\n",);
+                    }
+                };
 
-            match solution_index_by_box_index
-                .iter()
-                .position(|&r| r.0 == involved_index)
-            {
-                Some(index) => {
-                    let matched_val = solution_index_by_box_index[index];
-                    solution_index_by_box_index[index].1 += 1;
-                    solution_index_by_box_index.retain(|&el| el.0 <= matched_val.0);
-                    println!("incrementing {matched_val:?} {solution_index_by_box_index:?}\n",);
-                }
-                None => {
-                    solution_index_by_box_index.push((involved_index, 1));
-                    solution_index_by_box_index.retain(|&el| el.0 <= involved_index);
-                    println!("pushing {involved_index} {solution_index_by_box_index:?}\n");
-                }
-            };
-        } else {
-            println!("*** FORWARD -> to{}\n", involved_index + 1);
-            involved_index += 1;
+                involved_index += 1;
+            }
         }
     }
 
     Ok(grid_copy)
+}
+
+/// Returns index in store of matching box index
+fn search_store(store: &SolutionStore, box_index: usize) -> Option<usize> {
+    return store.iter().position(|&r| r.0 == box_index);
 }
 
 /// Updates the grid with a value at the given position and remove that value from the involved

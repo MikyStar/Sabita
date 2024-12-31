@@ -23,7 +23,7 @@ fn main() {
         vec![0, 7, 5, 0, 0, 1, 6, 9, 2],
         vec![2, 0, 3, 0, 0, 7, 0, 0, 0],
         vec![9, 6, 4, 0, 2, 0, 7, 1, 0],
-        vec![0, 0, 0, 6, tbd, 3, 2, 5, 0], // This element breaks the solving
+        vec![0, 0, 0, 6, tbd, 3, 2, 5, 0], // 7: This element breaks the solving
         vec![5, 0, 0, 1, 4, 2, 0, 0, 0],
         vec![0, 2, 6, 0, 0, 0, 0, 0, 0],
     ]);
