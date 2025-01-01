@@ -40,17 +40,17 @@ impl fmt::Display for ValidationError {
 /// Checks no duplication of values for line, columns and row
 pub fn validate(values: &GridValues) -> Result<(), ValidationError> {
     for index in 0..LENGTH_DIMENSION {
-        match validate_new_box(
-            &values,
+        let result = validate_new_box(
+            values,
             &BoxLocation {
                 line: index,
                 column: index,
                 region: index,
             },
-        ) {
-            Err(err) => return Err(err),
-            Ok(_) => {}
-        }
+        );
+
+        // Syntax magic to keep going if ok or breaking if wrong
+        result?
     }
 
     Ok(())
@@ -66,7 +66,7 @@ pub fn validate_new_box(
         region,
     } = box_location;
 
-    let (is_line_valid, wrong_line_value) = is_line_valid(&values, line);
+    let (is_line_valid, wrong_line_value) = is_line_valid(values, line);
 
     if !is_line_valid {
         return Err(ValidationError {
@@ -76,7 +76,7 @@ pub fn validate_new_box(
         });
     }
 
-    let (is_column_valid, wrong_column_value) = is_column_valid(&values, column);
+    let (is_column_valid, wrong_column_value) = is_column_valid(values, column);
 
     if !is_column_valid {
         return Err(ValidationError {
@@ -86,7 +86,7 @@ pub fn validate_new_box(
         });
     }
 
-    let (is_region_valid, wrong_region_value) = is_region_valid(&values, region);
+    let (is_region_valid, wrong_region_value) = is_region_valid(values, region);
 
     if !is_region_valid {
         return Err(ValidationError {

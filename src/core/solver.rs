@@ -23,7 +23,7 @@ pub struct SortedSolution<'a> {
     solutions: Vec<u8>,
 }
 
-impl<'a> fmt::Display for SortedSolution<'a> {
+impl fmt::Display for SortedSolution<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{} -> {:?}", self.location, self.solutions)
     }
@@ -42,7 +42,7 @@ pub struct InvolvedSolutions<'a> {
 #[derive(Debug)]
 pub struct NoSudokuSolutionFound;
 
-impl<'a> fmt::Display for NoSudokuSolutionFound {
+impl fmt::Display for NoSudokuSolutionFound {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "No Sudoku solution found for the provided grid")
     }
@@ -57,7 +57,7 @@ type SolutionStore = Vec<(usize, usize)>;
 
 pub fn solve(
     grid_values: &GridValues,
-    missing_boxes: &Vec<BoxLocation>,
+    missing_boxes: &[BoxLocation],
 ) -> Result<GridValues, NoSudokuSolutionFound> {
     let mut grid_copy = grid_values.clone();
 
@@ -96,7 +96,7 @@ pub fn solve(
                     curr_sol,
                 );
 
-                match validate_new_box(&grid_copy, &current_box_location) {
+                match validate_new_box(&grid_copy, current_box_location) {
                     Ok(_) => {
                         sol_found_index = Some(curr_sol_index);
                         break;
@@ -157,7 +157,7 @@ pub fn solve(
 
 /// Returns index in store of matching box index
 fn search_store(store: &SolutionStore, box_index: usize) -> Option<usize> {
-    return store.iter().position(|&r| r.0 == box_index);
+    store.iter().position(|&r| r.0 == box_index)
 }
 
 /// Updates the grid with a value at the given position and remove that value from the involved
@@ -173,7 +173,7 @@ fn appy_sol(
 
     let mut affected_indices = vec![];
 
-    for (box_index, involved) in involved_boxes.into_iter().enumerate() {
+    for (box_index, involved) in involved_boxes.iter_mut().enumerate() {
         for (sol_index, sol) in involved.solutions.clone().into_iter().enumerate() {
             if sol == *value {
                 involved.solutions.remove(sol_index);
@@ -189,11 +189,11 @@ fn appy_sol(
 /// involved solutions
 fn rollback_sol(
     grid_copy: &mut GridValues,
-    involved_boxes: &mut Vec<SortedSolution>,
+    involved_boxes: &mut [SortedSolution],
     loc: &BoxLocation,
     affected_box_solutions: Vec<usize>,
     value: &u8,
-) -> () {
+) {
     grid_copy[loc.line as usize][loc.column as usize] = TO_BE_SOLVED;
 
     for index in affected_box_solutions {
@@ -223,8 +223,7 @@ pub fn get_involved_solutions<'a>(
         let mut involved_forward = vec![];
 
         if index + 1 < box_solutions.len() {
-            for other_box_index in (index + 1)..box_solutions.len() {
-                let other_box = &box_solutions[other_box_index];
+            for other_box in box_solutions.iter().skip(index + 1) {
                 let other_box_location = other_box.location;
 
                 let same_line = other_box_location.line == *line;
@@ -251,12 +250,12 @@ pub fn get_involved_solutions<'a>(
 /// Returns boxes, regions and solutions ordered by their number of possibilities (asc)
 pub fn get_solutions_complexity_sorted<'a>(
     grid_values: &GridValues,
-    missing_boxes: &'a Vec<BoxLocation>,
+    missing_boxes: &'a [BoxLocation],
 ) -> Vec<SortedSolution<'a>> {
     let mut solutions = vec![];
 
     for missing in missing_boxes.iter() {
-        let solution = get_box_solutions(&grid_values, &missing).unwrap();
+        let solution = get_box_solutions(grid_values, missing).unwrap();
         solutions.push(solution);
     }
 
@@ -287,11 +286,8 @@ pub fn get_box_solutions(
         let mut grid_to_test = grid_values.clone();
         grid_to_test[location.line as usize][location.column as usize] = possibility;
 
-        match validate(&grid_to_test) {
-            Ok(_) => {
-                answers.push(possibility);
-            }
-            Err(_) => {}
+        if validate(&grid_to_test).is_ok() {
+            answers.push(possibility);
         }
     }
 

@@ -22,11 +22,5 @@ fn main() {
     println!("\nSolved boxes {}", missing.len());
 
     println!("Is same as start: {}", res == original);
-    println!(
-        "Is really valid: {}",
-        match validate(&res) {
-            Ok(_) => true,
-            Err(_) => false,
-        }
-    );
+    println!("Is really valid: {}", validate(&res).is_ok());
 }

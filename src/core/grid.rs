@@ -156,7 +156,7 @@ impl Grid {
     pub fn solve(&self) -> Result<GridValues, NoSudokuSolutionFound> {
         let missing_boxes = self.locate_missing_box();
 
-        return solve(&self.get_values(), &missing_boxes);
+        solve(&self.get_values(), &missing_boxes)
     }
 }
 
@@ -190,7 +190,7 @@ pub fn location_to_region(line: &u8, col: &u8) -> Result<u8, Box<dyn Error>> {
 
 /// Parse a region index into coordinates (line, column)
 pub fn region_to_location(region_index: &u8) -> (u8, u8) {
-    let location = match region_index {
+    match region_index {
         0 => (0_u8, 0_u8),
         1 => (0_u8, 3_u8),
         2 => (0_u8, 6_u8),
@@ -201,7 +201,5 @@ pub fn region_to_location(region_index: &u8) -> (u8, u8) {
         7 => (6_u8, 3_u8),
         8 => (6_u8, 6_u8),
         _ => panic!("Region out of range"),
-    };
-
-    location
+    }
 }
