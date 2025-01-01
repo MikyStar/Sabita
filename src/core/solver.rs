@@ -57,6 +57,9 @@ type SolutionStore = Vec<(usize, usize)>;
 
 ////////////////////////////////////////
 
+// TODO mais en fait, le système d'involved il sert a rien, j'econmise pas de temps à le faire puisque je
+// tests dedans, faut juste iterer sur les missings avec backtracking et tester de 1 à 9
+
 pub fn solve(
     grid_values: &GridValues,
     missing_boxes: &Vec<BoxLocation>,
@@ -94,7 +97,6 @@ pub fn solve(
         // for i in involved_forward.clone() {
         //     println!("\t{i}");
         // }
-        println!("possible sols {current_box_solutions:?}");
 
         if start < current_box_solutions.len() {
             for curr_sol_index in start..current_box_solutions.len() {
@@ -115,27 +117,29 @@ pub fn solve(
                         sol_found_index = Some(curr_sol_index);
                         break;
                     }
-                    Err(_) => {}
+                    Err(_) => {
+                        if current_box_solutions.len() == 1 {
+                            println!("no more sols available");
+                            return Err(NoSudokuSolutionFound);
+                        }
+
+                        rollback_sol(
+                            &mut grid_copy,
+                            &mut involved_forward,
+                            current_box_location,
+                            affected_sol_indices,
+                            curr_sol,
+                        );
+                    }
                 }
-
-                if current_box_solutions.len() == 1 {
-                    println!("no more sols available");
-                    return Err(NoSudokuSolutionFound);
-                }
-
-                rollback_sol(
-                    &mut grid_copy,
-                    &mut involved_forward,
-                    current_box_location,
-                    affected_sol_indices,
-                    curr_sol,
-                );
-
-                sol_found_index = None;
             }
         } else {
-            println!("skipping searching a sol")
+            println!("skipping searching a sol");
+            grid_copy[current_box_location.line as usize][current_box_location.column as usize] =
+                TO_BE_SOLVED;
         }
+
+        print_2d_vec(&grid_copy);
 
         match sol_found_index {
             None => {
@@ -154,12 +158,14 @@ pub fn solve(
                         let matched_val = store[index];
                         store[index].1 += 1;
                         store.retain(|&el| el.0 <= matched_val.0);
-                        println!("incrementing {matched_val:?} {store:?}\n",);
+                        println!("incrementing {matched_val:?}",);
+                        println!("\t{store:?}\n",);
                     }
                     None => {
                         store.push((involved_index, 1));
                         store.retain(|&el| el.0 <= involved_index);
-                        println!("pushing {involved_index} {store:?}\n");
+                        println!("creating {involved_index}");
+                        println!("\t{store:?}\n");
                     }
                 };
             }
@@ -171,11 +177,13 @@ pub fn solve(
                     Some(index) => {
                         let matched_val = store[index];
                         store[index].1 = the_sol_index;
-                        println!("updating found index {matched_val:?} {store:?}\n",);
+                        println!("updating found index {matched_val:?}");
+                        println!("\t{store:?}\n");
                     }
                     None => {
                         store.push((involved_index, the_sol_index));
-                        println!("pushing ({involved_index}, {the_sol_index}) {store:?}\n",);
+                        println!("pushing ({involved_index}, {the_sol_index})");
+                        println!("\t{store:?}\n");
                     }
                 };
 
