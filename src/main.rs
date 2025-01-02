@@ -11,7 +11,7 @@ fn main() {
     // println!();
     // showcase_generator();
     // println!();
-    showcase_benchmark();
+    benchmark();
 }
 
 ////////////////////
@@ -47,11 +47,4 @@ fn showcase_generator() {
         "Is really valid: {}",
         validate(&generated.get_values()).is_ok()
     );
-}
-
-fn showcase_benchmark() {
-    println!("----- Benchmark -----\n");
-
-    let bench_results = benchmark();
-    println!("{bench_results}");
 }

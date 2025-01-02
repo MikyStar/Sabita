@@ -1,0 +1,31 @@
+----------------------------------------
+
+Benchmarking v0.1.0 with 10 iterations
+
+----- Solver -----
+
+** Missing 10 **
+Average: 103µs 214ns
+Fastest: 100µs 118ns
+Slowest: 106µs 899ns
+
+** Missing 30 **
+Average: 379µs 471ns
+Fastest: 362µs 935ns
+Slowest: 395µs 55ns
+
+** Missing 50 **
+Average: 50ms 534µs 386ns
+Fastest: 964µs 968ns
+Slowest: 414ms 640µs 975ns
+
+** Missing 64 **
+Average: 392ms 194µs 122ns
+Fastest: 3ms 683µs 515ns
+Slowest: 1s 194ms 315µs 859ns
+
+----- Generator -----
+
+Average: 125ms 510µs 439ns
+Fastest: 7ms 226µs 361ns
+Slowest: 730ms 404µs 904ns

@@ -4,6 +4,10 @@ Sabi is a Sudoku solver / generator made with Rust
 
 _'Sabi' (さび) means 'rust' in japanese_
 
+## Performances
+
+Performances are benchmarked through the `src/core/benchmark.rs` and the results are written in the `benchmark.log` file
+
 ## Dev
 
 ### Commands

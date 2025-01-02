@@ -1,5 +1,3 @@
-use crate::core::generator;
-
 use super::grid::Grid;
 
 use std::fmt;
@@ -10,7 +8,7 @@ use humanize_duration::Truncate;
 
 ////////////////////////////////////////
 
-pub const NB_TESTS: u8 = 3;
+pub const NB_TESTS: u8 = 10;
 
 ////////////////////
 
@@ -25,10 +23,7 @@ impl fmt::Display for FullBenchmark {
         let solver = format!("----- Solver -----\n\n{}", self.solver);
         let generator = format!("----- Generator -----\n\n{}", self.generator);
 
-        write!(
-            f,
-            "Randomizing {NB_TESTS} solutions\n\n{solver}\n\n{generator}"
-        )
+        write!(f, "{solver}\n\n{generator}")
     }
 }
 
@@ -36,18 +31,18 @@ impl fmt::Display for FullBenchmark {
 
 #[derive(Debug)]
 pub struct BenchmarkResult {
-    faster: Duration,
-    slower: Duration,
+    fastest: Duration,
+    slowest: Duration,
     average: Duration,
 }
 
 impl fmt::Display for BenchmarkResult {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let avg = &self.average.human(Truncate::Nano);
-        let fast = &self.faster.human(Truncate::Nano);
-        let slow = &self.slower.human(Truncate::Nano);
+        let fast = &self.fastest.human(Truncate::Nano);
+        let slow = &self.slowest.human(Truncate::Nano);
 
-        write!(f, "Average: {avg}\nFaster: {fast}\nSlower: {slow}")
+        write!(f, "Average: {avg}\nFastest: {fast}\nSlowest: {slow}")
     }
 }
 
@@ -77,11 +72,18 @@ impl fmt::Display for BenchmarkSolver {
 
 ////////////////////////////////////////
 
-pub fn benchmark() -> FullBenchmark {
-    FullBenchmark {
+pub fn benchmark() {
+    let version: &str = env!("CARGO_PKG_VERSION");
+
+    println!("----------------------------------------\n");
+    println!("Benchmarking v{version} with {NB_TESTS} iterations\n");
+
+    let results = FullBenchmark {
         solver: benchmark_solvers(),
         generator: benchmark_generators(),
-    }
+    };
+
+    println!("{results}");
 }
 
 fn benchmark_one_generate() -> Duration {
@@ -125,8 +127,8 @@ fn benchmark_generators() -> BenchmarkResult {
     }
 
     BenchmarkResult {
-        faster: faster.unwrap(),
-        slower: slower.unwrap(),
+        fastest: faster.unwrap(),
+        slowest: slower.unwrap(),
         average: full_time.unwrap().div_f32(NB_TESTS as f32),
     }
 }
@@ -175,8 +177,8 @@ fn benchmark_multiple_solver(nb_to_remove: u8) -> BenchmarkResult {
     }
 
     BenchmarkResult {
-        faster: faster.unwrap(),
-        slower: slower.unwrap(),
+        fastest: faster.unwrap(),
+        slowest: slower.unwrap(),
         average: full_time.unwrap().div_f32(NB_TESTS as f32),
     }
 }
