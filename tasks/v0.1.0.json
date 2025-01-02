@@ -21,7 +21,7 @@
     "datas": [
         {
             "name": "git hooks",
-            "state": "wip",
+            "state": "done",
             "id": 0,
             "timestamp": "28/12/2024",
             "subtasks": [
@@ -31,85 +31,42 @@
                     "description": "tests, lint, audit, dependency",
                     "id": 1,
                     "timestamp": "28/12/2024"
-                },
-                {
-                    "name": "pre-merge",
-                    "state": "todo",
-                    "id": 2,
-                    "timestamp": "28/12/2024",
-                    "subtasks": [
-                        {
-                            "name": "benchmark solver and gen for current package version with hash from previous commit and append results on a same file accross version to trace perfs",
-                            "state": "todo",
-                            "id": 3,
-                            "timestamp": "28/12/2024"
-                        },
-                        {
-                            "name": "publish binary on github",
-                            "state": "todo",
-                            "id": 4,
-                            "timestamp": "28/12/2024"
-                        }
-                    ]
                 }
             ]
         },
         {
             "name": "solver",
-            "state": "wip",
-            "id": 5,
+            "state": "done",
+            "id": 2,
             "timestamp": "28/12/2024",
             "subtasks": [
                 {
-                    "name": "checks if theres only one solutions",
-                    "state": "todo",
-                    "id": 9,
-                    "timestamp": "29/12/2024",
-                    "subtasks": [
-                        {
-                            "name": "make it smart: during the resolution process there should only be one solution remaining",
-                            "state": "todo",
-                            "id": 10,
-                            "timestamp": "29/12/2024"
-                        }
-                    ]
-                },
-                {
-                    "name": "improve the apply to remove the used value in everyreference to the boxes involved, might need to change the typing to references",
-                    "state": "todo",
-                    "id": 12,
-                    "timestamp": "30/12/2024"
+                    "name": "tests",
+                    "state": "done",
+                    "id": 6,
+                    "timestamp": "03/01/2025"
                 }
             ]
         },
         {
             "name": "generator",
-            "state": "todo",
-            "id": 6,
+            "state": "done",
+            "id": 3,
             "timestamp": "28/12/2024",
-            "description": "do first line -> shuffle list from 0 to 9 then place then first coloumn remove the element from first line shuffle and place then second line with same logic + check if valid, same for 2nd column and so on .. line then col ... ",
             "subtasks": [
                 {
-                    "name": "can set a specific number of missing box or none",
-                    "state": "wip",
-                    "id": 7,
-                    "timestamp": "29/12/2024"
-                },
-                {
-                    "name": "checks if theres only one solutions",
+                    "name": "tests",
                     "state": "todo",
-                    "id": 8,
-                    "timestamp": "29/12/2024",
-                    "subtasks": [
-                        {
-                            "name": "for that solve it back and use tthe task #10",
-                            "state": "todo",
-                            "id": 11,
-                            "timestamp": "29/12/2024"
-                        }
-                    ]
+                    "id": 5,
+                    "timestamp": "03/01/2025"
                 }
             ]
+        },
+        {
+            "name": "benchmark",
+            "state": "done",
+            "id": 4,
+            "timestamp": "03/01/2025"
         }
     ]
 }
