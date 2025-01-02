@@ -2,7 +2,7 @@
 mod get_box_solutions {
     use sabi::core::constants::TO_BE_SOLVED;
     use sabi::core::grid::BoxLocation;
-    use sabi::core::solver::{get_box_solutions, BoxSolutionNotFound};
+    use sabi::core::solver::get_box_solutions;
 
     #[test]
     fn should_be_1() {

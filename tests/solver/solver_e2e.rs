@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod solver_e2e {
     use sabi::assets::full_grid::GRID_VALUES_1;
+    use sabi::core::constants::TO_BE_SOLVED;
     use sabi::core::grid::Grid;
     use sabi::core::validation::validate;
     use sabi::utils::grid_utils::grid_values_array_to_vec;
@@ -13,7 +14,20 @@ mod solver_e2e {
 
         let res = to_solve.solve().unwrap();
 
-        assert!(validate(&res).is_ok())
+        assert!(validate(&res).is_ok(), "Grid isn't valid");
+
+        let mut unsolved_box_found = false;
+        for line in res.into_iter() {
+            for val in line.into_iter() {
+                if val == TO_BE_SOLVED {
+                    unsolved_box_found = true;
+                }
+            }
+        }
+        assert!(
+            unsolved_box_found == false,
+            "At least one unsolved box remaining"
+        );
     }
 
     //////////
