@@ -1,4 +1,5 @@
 use sabi::assets::full_grid::GRID_VALUES_1;
+use sabi::core::generator::generate;
 use sabi::core::grid::{print_2d_vec, Grid};
 use sabi::core::validation::validate;
 use sabi::utils::grid_utils::grid_values_array_to_vec;
@@ -6,9 +7,18 @@ use sabi::utils::grid_utils::grid_values_array_to_vec;
 ////////////////////////////////////////
 
 fn main() {
+    showcase_solver();
+    println!();
+    showcase_generator();
+}
+
+////////////////////
+
+fn showcase_solver() {
+    println!("----- Solver -----\n");
     let original = grid_values_array_to_vec(GRID_VALUES_1);
     let mut to_solve = Grid::new(original.clone());
-    to_solve.remove_random_values(50);
+    to_solve.remove_random_values(70);
 
     println!("Full grid");
     to_solve.print();
@@ -23,4 +33,13 @@ fn main() {
 
     println!("Is same as start: {}", res == original);
     println!("Is really valid: {}", validate(&res).is_ok());
+}
+
+fn showcase_generator() {
+    println!("----- Generator -----\n");
+    let generated = generate().unwrap();
+
+    println!("Generated");
+    print_2d_vec(&generated);
+    println!("Is really valid: {}", validate(&generated).is_ok());
 }
