@@ -1,3 +1,4 @@
+pub mod benchmark;
 pub mod constants;
 pub mod generator;
 pub mod grid;

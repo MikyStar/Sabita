@@ -1,4 +1,5 @@
 use sabi::assets::full_grid::GRID_VALUES_1;
+use sabi::core::benchmark::benchmark;
 use sabi::core::generator::generate;
 use sabi::core::grid::{print_2d_vec, Grid};
 use sabi::core::validation::validate;
@@ -7,9 +8,11 @@ use sabi::utils::grid_utils::grid_values_array_to_vec;
 ////////////////////////////////////////
 
 fn main() {
-    showcase_solver();
-    println!();
-    showcase_generator();
+    // showcase_solver();
+    // println!();
+    // showcase_generator();
+    // println!();
+    showcase_benchmark();
 }
 
 ////////////////////
@@ -42,4 +45,11 @@ fn showcase_generator() {
     println!("Generated");
     print_2d_vec(&generated);
     println!("Is really valid: {}", validate(&generated).is_ok());
+}
+
+fn showcase_benchmark() {
+    println!("----- Benchmark -----\n");
+
+    let bench_results = benchmark();
+    println!("{bench_results}");
 }
