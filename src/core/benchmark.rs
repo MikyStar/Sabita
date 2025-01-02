@@ -1,3 +1,5 @@
+use crate::core::generator;
+
 use super::grid::Grid;
 
 use std::fmt;
@@ -15,13 +17,18 @@ pub const NB_TESTS: u8 = 3;
 #[derive(Debug)]
 pub struct FullBenchmark {
     solver: BenchmarkSolver,
+    generator: BenchmarkResult,
 }
 
 impl fmt::Display for FullBenchmark {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let solver = format!("----- Solver -----\n\n{}", self.solver);
+        let generator = format!("----- Generator -----\n\n{}", self.generator);
 
-        write!(f, "Randomizing {NB_TESTS} solutions\n\n{solver}")
+        write!(
+            f,
+            "Randomizing {NB_TESTS} solutions\n\n{solver}\n\n{generator}"
+        )
     }
 }
 
@@ -73,6 +80,54 @@ impl fmt::Display for BenchmarkSolver {
 pub fn benchmark() -> FullBenchmark {
     FullBenchmark {
         solver: benchmark_solvers(),
+        generator: benchmark_generators(),
+    }
+}
+
+fn benchmark_one_generate() -> Duration {
+    let start = Instant::now();
+    let _grid = Grid::generate();
+    start.elapsed()
+}
+
+fn benchmark_generators() -> BenchmarkResult {
+    let mut faster: Option<Duration> = None;
+    let mut slower: Option<Duration> = None;
+    let mut full_time: Option<Duration> = None;
+
+    for _i in 0..NB_TESTS {
+        let res = benchmark_one_generate();
+
+        match faster {
+            None => faster = Some(res),
+            Some(val) => {
+                if val > res {
+                    faster = Some(res);
+                }
+            }
+        }
+
+        match slower {
+            None => slower = Some(res),
+            Some(val) => {
+                if val < res {
+                    slower = Some(res);
+                }
+            }
+        }
+
+        match full_time {
+            None => full_time = Some(res),
+            Some(val) => {
+                full_time = Some(val + res);
+            }
+        }
+    }
+
+    BenchmarkResult {
+        faster: faster.unwrap(),
+        slower: slower.unwrap(),
+        average: full_time.unwrap().div_f32(NB_TESTS as f32),
     }
 }
 

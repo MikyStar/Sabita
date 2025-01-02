@@ -85,6 +85,12 @@ impl Grid {
         Grid { values }
     }
 
+    pub fn generate() -> Self {
+        let values = generate().unwrap();
+
+        Grid { values }
+    }
+
     //////////
     // Accessors
 
