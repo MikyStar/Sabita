@@ -80,7 +80,7 @@ pub fn benchmark() {
 
     let results = FullBenchmark {
         solver: benchmark_solvers(),
-        generator: benchmark_generators(),
+        generator: benchmark_fn(&benchmark_one_generate),
     };
 
     println!("{results}");
@@ -92,95 +92,34 @@ fn benchmark_one_generate() -> Duration {
     start.elapsed()
 }
 
-fn benchmark_generators() -> BenchmarkResult {
-    let mut faster: Option<Duration> = None;
-    let mut slower: Option<Duration> = None;
-    let mut full_time: Option<Duration> = None;
-
-    for _i in 0..NB_TESTS {
-        let res = benchmark_one_generate();
-
-        match faster {
-            None => faster = Some(res),
-            Some(val) => {
-                if val > res {
-                    faster = Some(res);
-                }
-            }
-        }
-
-        match slower {
-            None => slower = Some(res),
-            Some(val) => {
-                if val < res {
-                    slower = Some(res);
-                }
-            }
-        }
-
-        match full_time {
-            None => full_time = Some(res),
-            Some(val) => {
-                full_time = Some(val + res);
-            }
-        }
-    }
-
-    BenchmarkResult {
-        fastest: faster.unwrap(),
-        slowest: slower.unwrap(),
-        average: full_time.unwrap().div_f32(NB_TESTS as f32),
-    }
-}
-
 fn benchmark_solvers() -> BenchmarkSolver {
+    let missing_ten = benchmark_fn(&solv_10);
+    let missing_thirty = benchmark_fn(&solv_30);
+    let missing_fifty = benchmark_fn(&solv_50);
+    let missing_sixty_four = benchmark_fn(&solv_64);
+
     BenchmarkSolver {
-        missing_ten: benchmark_multiple_solver(10),
-        missing_thirty: benchmark_multiple_solver(30),
-        missing_fifty: benchmark_multiple_solver(50),
-        missing_sixty_four: benchmark_multiple_solver(64),
+        missing_ten,
+        missing_thirty,
+        missing_fifty,
+        missing_sixty_four,
     }
 }
 
-fn benchmark_multiple_solver(nb_to_remove: u8) -> BenchmarkResult {
-    let mut faster: Option<Duration> = None;
-    let mut slower: Option<Duration> = None;
-    let mut full_time: Option<Duration> = None;
+fn solv_10() -> Duration {
+    benchmark_one_solver(10)
+}
 
-    for _i in 0..NB_TESTS {
-        let res = benchmark_one_solver(nb_to_remove);
+fn solv_30() -> Duration {
+    benchmark_one_solver(30)
+}
 
-        match faster {
-            None => faster = Some(res),
-            Some(val) => {
-                if val > res {
-                    faster = Some(res);
-                }
-            }
-        }
+fn solv_50() -> Duration {
+    benchmark_one_solver(50)
+}
 
-        match slower {
-            None => slower = Some(res),
-            Some(val) => {
-                if val < res {
-                    slower = Some(res);
-                }
-            }
-        }
-
-        match full_time {
-            None => full_time = Some(res),
-            Some(val) => {
-                full_time = Some(val + res);
-            }
-        }
-    }
-
-    BenchmarkResult {
-        fastest: faster.unwrap(),
-        slowest: slower.unwrap(),
-        average: full_time.unwrap().div_f32(NB_TESTS as f32),
-    }
+fn solv_64() -> Duration {
+    benchmark_one_solver(64)
 }
 
 fn benchmark_one_solver(nb_to_remove: u8) -> Duration {
@@ -191,4 +130,47 @@ fn benchmark_one_solver(nb_to_remove: u8) -> Duration {
     grid.solve().unwrap();
 
     start.elapsed()
+}
+
+////////////////////
+
+fn benchmark_fn(f: &dyn Fn() -> Duration) -> BenchmarkResult {
+    let mut faster: Option<Duration> = None;
+    let mut slower: Option<Duration> = None;
+    let mut full_time: Option<Duration> = None;
+
+    for _i in 0..NB_TESTS {
+        let res = f();
+
+        match faster {
+            None => faster = Some(res),
+            Some(val) => {
+                if val > res {
+                    faster = Some(res);
+                }
+            }
+        }
+
+        match slower {
+            None => slower = Some(res),
+            Some(val) => {
+                if val < res {
+                    slower = Some(res);
+                }
+            }
+        }
+
+        match full_time {
+            None => full_time = Some(res),
+            Some(val) => {
+                full_time = Some(val + res);
+            }
+        }
+    }
+
+    BenchmarkResult {
+        fastest: faster.unwrap(),
+        slowest: slower.unwrap(),
+        average: full_time.unwrap().div_f32(NB_TESTS as f32),
+    }
 }
