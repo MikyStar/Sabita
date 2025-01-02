@@ -1,8 +1,8 @@
-use super::constants::{LENGTH_DIMENSION, TO_BE_SOLVED};
-use super::solver::{solve, NoSudokuSolutionFound};
+use super::constants::LENGTH_DIMENSION;
+use super::generator::{generate, remove_random_values};
+use super::solver::{locate_missing_box, solve, NoSudokuSolutionFound};
 use super::validation::validate;
 
-use rand::distributions::{Distribution, Uniform};
 use std::error::Error;
 use std::fmt;
 
@@ -102,57 +102,15 @@ impl Grid {
     // Methods
 
     pub fn locate_missing_box(&self) -> Vec<BoxLocation> {
-        let mut locations = vec![];
-
-        for (row_index, row) in self.values.iter().enumerate() {
-            for (column_index, value) in row.iter().enumerate() {
-                if *value == 0 {
-                    let line = row_index as u8;
-                    let column = column_index as u8;
-                    let region = location_to_region(&line, &column).unwrap();
-
-                    let loc = BoxLocation {
-                        line,
-                        column,
-                        region,
-                    };
-
-                    locations.push(loc);
-                }
-            }
-        }
-
-        locations
+        locate_missing_box(&self.get_values())
     }
 
     pub fn remove_random_values(&mut self, nb_to_remove: u8) -> Vec<BoxLocation> {
-        if nb_to_remove >= LENGTH_DIMENSION * LENGTH_DIMENSION {
-            panic!("Can not remove that much values")
-        }
+        let (values, locations) = remove_random_values(&mut self.values, nb_to_remove);
 
-        let mut rng = rand::thread_rng();
-        let pos = Uniform::from(TO_BE_SOLVED..LENGTH_DIMENSION);
+        self.values = values;
 
-        let mut loc_removed = vec![];
-
-        while loc_removed.len() < nb_to_remove.into() {
-            let line = pos.sample(&mut rng);
-            let column = pos.sample(&mut rng);
-
-            let location = BoxLocation {
-                line,
-                column,
-                region: location_to_region(&line, &column).unwrap(),
-            };
-
-            if !loc_removed.contains(&location) {
-                self.values[line as usize][column as usize] = TO_BE_SOLVED;
-
-                loc_removed.push(location);
-            }
-        }
-
-        loc_removed
+        locations
     }
 
     pub fn print(&self) {

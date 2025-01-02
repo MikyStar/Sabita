@@ -1,9 +1,11 @@
+use crate::assets::full_grid::GRID_VALUES_1;
+use crate::utils::grid_utils::grid_values_array_to_vec;
+
 use super::constants::{LENGTH_DIMENSION, TO_BE_SOLVED};
 use super::grid::{location_to_region, BoxLocation, GridValues};
-use super::solver::solve;
+use super::solver::{locate_missing_box, solve};
 
-use rand::seq::SliceRandom;
-use rand::thread_rng;
+use rand::distributions::{Distribution, Uniform};
 
 use std::fmt;
 
@@ -22,68 +24,58 @@ impl fmt::Display for GeneratingSudokuError {
 
 /// Generates a sudoku
 pub fn generate() -> Result<GridValues, GeneratingSudokuError> {
-    let mut matrix: GridValues = vec![vec![0; 9]; 9];
+    let original: GridValues = grid_values_array_to_vec(GRID_VALUES_1);
+    let mut to_return = original.clone();
 
-    // Creating a matrix with random first, mid and last line
-    // This prevents to check for line and region
+    let min_round = 3;
+    let mut round_counter = 0;
 
-    let mut first_line = init_values();
-    first_line.shuffle(&mut thread_rng());
+    while round_counter < min_round {
+        let modified = remove_random_values(&to_return, 50).0;
+        let missing_locations = locate_missing_box(&modified);
+        to_return = solve(&modified, &missing_locations).unwrap();
 
-    let mid_line_index = 3;
-    let mut mid_line = init_values();
-    mid_line.shuffle(&mut thread_rng());
-
-    let mut last_line = init_values();
-    last_line.shuffle(&mut thread_rng());
-
-    for i in 0..LENGTH_DIMENSION {
-        let index = i as usize;
-
-        // Making last line compliant
-        while first_line[index] == last_line[index] {
-            let value_to_move = last_line[index];
-            last_line.remove(i.into());
-            last_line.push(value_to_move);
-        }
-
-        // Making mid line compliant
-        while (first_line[index] == mid_line[index]) | (last_line[index] == mid_line[index]) {
-            let value_to_move = mid_line[index];
-            mid_line.remove(i.into());
-            mid_line.push(value_to_move);
-        }
-
-        matrix[0][index] = first_line[index];
-        matrix[mid_line_index][index] = mid_line[index];
-        matrix[(LENGTH_DIMENSION - 1) as usize][index] = last_line[index];
-    }
-
-    // Solve the remaining boxes
-
-    let mut missing_locations = vec![];
-
-    for line_index in 1..(LENGTH_DIMENSION - 1) {
-        if (line_index as usize) != mid_line_index {
-            for col_index in 0..LENGTH_DIMENSION {
-                let loc = BoxLocation {
-                    line: line_index,
-                    column: col_index,
-                    region: location_to_region(&line_index, &col_index).unwrap(),
-                };
-                missing_locations.push(loc);
-            }
+        if original != to_return {
+            round_counter = round_counter + 1;
         }
     }
 
-    match solve(&matrix, &missing_locations) {
-        Ok(solved) => Ok(solved),
-        Err(_) => Err(GeneratingSudokuError),
-    }
+    Ok(to_return)
 }
 
 ////////////////////
 
-fn init_values() -> Vec<u8> {
-    ((TO_BE_SOLVED + 1)..(LENGTH_DIMENSION + 1)).collect()
+pub fn remove_random_values(
+    values: &GridValues,
+    nb_to_remove: u8,
+) -> (GridValues, Vec<BoxLocation>) {
+    if nb_to_remove >= LENGTH_DIMENSION * LENGTH_DIMENSION {
+        panic!("Can not remove that much values")
+    }
+
+    let mut matrix = values.clone();
+
+    let mut rng = rand::thread_rng();
+    let pos = Uniform::from(TO_BE_SOLVED..LENGTH_DIMENSION);
+
+    let mut loc_removed = vec![];
+
+    while loc_removed.len() < nb_to_remove.into() {
+        let line = pos.sample(&mut rng);
+        let column = pos.sample(&mut rng);
+
+        let location = BoxLocation {
+            line,
+            column,
+            region: location_to_region(&line, &column).unwrap(),
+        };
+
+        if !loc_removed.contains(&location) {
+            matrix[line as usize][column as usize] = TO_BE_SOLVED;
+
+            loc_removed.push(location);
+        }
+    }
+
+    (matrix, loc_removed)
 }

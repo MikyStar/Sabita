@@ -1,5 +1,5 @@
 use super::constants::{LENGTH_DIMENSION, TO_BE_SOLVED};
-use super::grid::{BoxLocation, GridValues};
+use super::grid::{location_to_region, BoxLocation, GridValues};
 use super::validation::validate_new_box;
 
 use std::fmt;
@@ -300,4 +300,28 @@ pub fn get_box_solutions(
     } else {
         Ok(answers)
     }
+}
+
+pub fn locate_missing_box(values: &GridValues) -> Vec<BoxLocation> {
+    let mut locations = vec![];
+
+    for (row_index, row) in values.iter().enumerate() {
+        for (column_index, value) in row.iter().enumerate() {
+            if *value == 0 {
+                let line = row_index as u8;
+                let column = column_index as u8;
+                let region = location_to_region(&line, &column).unwrap();
+
+                let loc = BoxLocation {
+                    line,
+                    column,
+                    region,
+                };
+
+                locations.push(loc);
+            }
+        }
+    }
+
+    locations
 }
