@@ -118,7 +118,10 @@ mod get_box_solutions {
 
         match answers {
             Ok(_) => assert!(false, "Should have thrown error"),
-            Err(err) => assert_eq!(err.to_string(), BoxSolutionNotFound.to_string()),
+            Err(err) => assert_eq!(
+                err.to_string(),
+                "Solution of the box [0:0](0) could'nt be found"
+            ),
         }
     }
 }

@@ -1,17 +1,19 @@
 use super::constants::{LENGTH_DIMENSION, TO_BE_SOLVED};
 use super::grid::{BoxLocation, GridValues};
-use super::validation::{validate, validate_new_box};
+use super::validation::validate_new_box;
 
 use std::fmt;
 
 ////////////////////////////////////////
 
 #[derive(Debug, Clone)]
-pub struct BoxSolutionNotFound;
+pub struct BoxSolutionNotFound {
+    location: BoxLocation,
+}
 
 impl fmt::Display for BoxSolutionNotFound {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Solution of the box could'nt be found")
+        write!(f, "Solution of the box {} could'nt be found", self.location)
     }
 }
 
@@ -286,13 +288,15 @@ pub fn get_box_solutions(
         let mut grid_to_test = grid_values.clone();
         grid_to_test[location.line as usize][location.column as usize] = possibility;
 
-        if validate(&grid_to_test).is_ok() {
+        if validate_new_box(&grid_to_test, location).is_ok() {
             answers.push(possibility);
         }
     }
 
     if answers.is_empty() {
-        Err(BoxSolutionNotFound)
+        Err(BoxSolutionNotFound {
+            location: location.clone(),
+        })
     } else {
         Ok(answers)
     }
