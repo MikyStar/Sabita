@@ -1,5 +1,6 @@
 use sabi::assets::full_grid::GRID_VALUES_1;
 use sabi::core::benchmark::benchmark;
+use sabi::core::cli::parse_args;
 use sabi::core::grid::{print_2d_vec, Grid};
 use sabi::core::validation::validate;
 use sabi::utils::grid_utils::grid_values_array_to_vec;
@@ -11,7 +12,9 @@ fn main() {
     // println!();
     // showcase_generator();
     // println!();
-    benchmark();
+    // benchmark();
+    let args = parse_args();
+    println!("{args}");
 }
 
 ////////////////////
