@@ -1,6 +1,8 @@
 use super::grid::Grid;
 
 use std::fmt;
+use std::sync::{Arc, Mutex};
+use std::thread;
 use std::time::{Duration, Instant};
 
 use humanize_duration::prelude::DurationExt;
@@ -8,7 +10,7 @@ use humanize_duration::Truncate;
 
 ////////////////////////////////////////
 
-pub const NB_TESTS: u8 = 10;
+pub const NB_TESTS: u8 = 50;
 
 ////////////////////
 
@@ -134,43 +136,75 @@ fn benchmark_one_solver(nb_to_remove: u8) -> Duration {
 
 ////////////////////
 
-fn benchmark_fn(f: &dyn Fn() -> Duration) -> BenchmarkResult {
-    let mut faster: Option<Duration> = None;
-    let mut slower: Option<Duration> = None;
-    let mut full_time: Option<Duration> = None;
+fn benchmark_fn(f: impl Fn() -> Duration + Send + Sync + 'static) -> BenchmarkResult {
+    let func = Arc::new(f);
+
+    let faster = Arc::new(Mutex::new(None));
+    let slower = Arc::new(Mutex::new(None));
+    let full_time = Arc::new(Mutex::new(None));
+
+    let mut thread_handles = vec![];
 
     for _i in 0..NB_TESTS {
-        let res = f();
+        let func_clone = Arc::clone(&func);
+        let faster_clone = Arc::clone(&faster);
+        let slower_clone = Arc::clone(&slower);
+        let full_time_clone = Arc::clone(&full_time);
 
-        match faster {
-            None => faster = Some(res),
-            Some(val) => {
-                if val > res {
-                    faster = Some(res);
+        let handle = thread::spawn(move || {
+            let res = func_clone();
+
+            {
+                let mut fast = faster_clone.lock().unwrap();
+                match *fast {
+                    None => *fast = Some(res),
+                    Some(val) => {
+                        if val > res {
+                            *fast = Some(res);
+                        }
+                    }
                 }
             }
-        }
 
-        match slower {
-            None => slower = Some(res),
-            Some(val) => {
-                if val < res {
-                    slower = Some(res);
+            {
+                let mut slow = slower_clone.lock().unwrap();
+                match *slow {
+                    None => *slow = Some(res),
+                    Some(val) => {
+                        if val < res {
+                            *slow = Some(res);
+                        }
+                    }
                 }
             }
-        }
 
-        match full_time {
-            None => full_time = Some(res),
-            Some(val) => {
-                full_time = Some(val + res);
+            {
+                let mut full = full_time_clone.lock().unwrap();
+                match *full {
+                    None => *full = Some(res),
+                    Some(val) => {
+                        *full = Some(val + res);
+                    }
+                }
             }
-        }
+        });
+
+        thread_handles.push(handle);
     }
 
+    for handle in thread_handles {
+        handle.join().unwrap();
+    }
+
+    let fastest = (*faster.lock().unwrap()).unwrap();
+    let slowest = (slower.lock().unwrap()).unwrap();
+    let average = (*full_time.lock().unwrap())
+        .unwrap()
+        .div_f32(NB_TESTS as f32);
+
     BenchmarkResult {
-        fastest: faster.unwrap(),
-        slowest: slower.unwrap(),
-        average: full_time.unwrap().div_f32(NB_TESTS as f32),
+        fastest,
+        slowest,
+        average,
     }
 }
