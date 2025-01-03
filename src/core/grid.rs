@@ -1,6 +1,6 @@
 use super::constants::LENGTH_DIMENSION;
 use super::generator::{generate, remove_random_values};
-use super::solver::{locate_missing_box, solve, NoSudokuSolutionFound};
+use super::solver::{locate_missing_box, solve};
 use super::validation::validate;
 
 use std::error::Error;
@@ -117,10 +117,12 @@ impl Grid {
         print_2d_vec(&self.get_values());
     }
 
-    pub fn solve(&self) -> Result<GridValues, NoSudokuSolutionFound> {
+    pub fn solve(&mut self) {
         let missing_boxes = self.locate_missing_box();
 
-        solve(&self.get_values(), &missing_boxes)
+        let values = solve(&self.get_values(), &missing_boxes).unwrap();
+
+        self.values = values;
     }
 }
 

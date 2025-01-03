@@ -12,7 +12,8 @@ mod solver_e2e {
         let mut to_solve = Grid::new(original.clone());
         to_solve.remove_random_values(nb_missing);
 
-        let res = to_solve.solve().unwrap();
+        to_solve.solve();
+        let res = to_solve.get_values();
 
         assert!(validate(&res).is_ok(), "Grid isn't valid");
 

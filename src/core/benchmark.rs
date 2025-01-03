@@ -131,7 +131,7 @@ fn benchmark_one_solver(nb_to_remove: u8) -> Duration {
     grid.remove_random_values(nb_to_remove);
 
     let start = Instant::now();
-    grid.solve().unwrap();
+    grid.solve();
     start.elapsed()
 }
 

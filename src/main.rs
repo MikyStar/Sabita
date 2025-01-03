@@ -8,7 +8,7 @@ use sabi::utils::grid_utils::grid_values_array_to_vec;
 ////////////////////////////////////////
 
 fn main() {
-    // showcase_solver();
+    showcase_solver();
     // println!();
     // showcase_generator();
     // println!();
@@ -31,13 +31,16 @@ fn showcase_solver() {
     let missing = to_solve.locate_missing_box();
 
     println!("\nSolved");
-    let res = to_solve.solve().unwrap();
+    to_solve.solve();
+    to_solve.print();
 
-    print_2d_vec(&res);
     println!("\nSolved boxes {}", missing.len());
 
-    println!("Is same as start: {}", res == original);
-    println!("Is really valid: {}", validate(&res).is_ok());
+    println!("Is same as start: {}", to_solve.get_values() == original);
+    println!(
+        "Is really valid: {}",
+        validate(&to_solve.get_values()).is_ok()
+    );
 }
 
 fn showcase_generator() {
