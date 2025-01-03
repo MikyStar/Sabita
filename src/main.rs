@@ -21,8 +21,9 @@ fn main() {
 
 fn showcase_solver() {
     println!("----- Solver -----\n");
-    let original = grid_values_array_to_vec(GRID_VALUES_1);
-    let mut to_solve = Grid::new(original.clone());
+    let value_array = GRID_VALUES_1;
+    let original = grid_values_array_to_vec(value_array);
+    let mut to_solve = Grid::from_array(value_array);
     to_solve.remove_random_values(70);
 
     println!("Full grid");

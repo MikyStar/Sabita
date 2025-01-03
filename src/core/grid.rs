@@ -1,3 +1,6 @@
+use crate::assets::full_grid::ConstGridValues;
+use crate::utils::grid_utils::grid_values_array_to_vec;
+
 use super::constants::LENGTH_DIMENSION;
 use super::generator::{generate, remove_random_values};
 use super::solver::{locate_missing_box, solve};
@@ -87,6 +90,12 @@ impl Grid {
 
     pub fn generate() -> Self {
         let values = generate().unwrap();
+
+        Grid { values }
+    }
+
+    pub fn from_array(array: ConstGridValues) -> Self {
+        let values = grid_values_array_to_vec(array);
 
         Grid { values }
     }
