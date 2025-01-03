@@ -88,23 +88,25 @@ pub fn benchmark() {
     println!("{results}");
 }
 
+////////////////////
+
 fn benchmark_one_generate() -> Duration {
     let start = Instant::now();
-    let _grid = Grid::generate();
+    Grid::generate();
     start.elapsed()
 }
 
 fn benchmark_solvers() -> BenchmarkSolver {
-    let missing_ten = benchmark_fn(&solv_10);
-    let missing_thirty = benchmark_fn(&solv_30);
-    let missing_fifty = benchmark_fn(&solv_50);
-    let missing_sixty_four = benchmark_fn(&solv_64);
+    let miss_10_thread = thread::spawn(|| benchmark_fn(&solv_10));
+    let miss_30_thread = thread::spawn(|| benchmark_fn(&solv_30));
+    let miss_50_thread = thread::spawn(|| benchmark_fn(&solv_50));
+    let miss_64_thread = thread::spawn(|| benchmark_fn(&solv_64));
 
     BenchmarkSolver {
-        missing_ten,
-        missing_thirty,
-        missing_fifty,
-        missing_sixty_four,
+        missing_ten: miss_10_thread.join().unwrap(),
+        missing_thirty: miss_30_thread.join().unwrap(),
+        missing_fifty: miss_50_thread.join().unwrap(),
+        missing_sixty_four: miss_64_thread.join().unwrap(),
     }
 }
 
@@ -130,7 +132,6 @@ fn benchmark_one_solver(nb_to_remove: u8) -> Duration {
 
     let start = Instant::now();
     grid.solve().unwrap();
-
     start.elapsed()
 }
 
