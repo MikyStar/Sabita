@@ -1,6 +1,6 @@
 use super::grid::GridValues;
 
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::prelude::*;
 
 ////////////////////////////////////////
@@ -40,4 +40,20 @@ pub fn read(path: String) -> GridValues {
     }
 
     values
+}
+
+pub fn write(path: String, values: GridValues) -> () {
+    let mut content: String = String::new();
+
+    for line in values {
+        let val_line: String = line
+            .into_iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join(",");
+
+        content += &(val_line + "\n");
+    }
+
+    fs::write(path, content).expect("Unable to write into file '{path}'");
 }

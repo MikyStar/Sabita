@@ -1,4 +1,8 @@
-pub type ConstGridValues = [[u8; 9]; 9];
+use crate::core::constants::LENGTH_DIMENSION;
+
+////////////////////////////////////////
+
+pub type ConstGridValues = [[u8; LENGTH_DIMENSION as usize]; LENGTH_DIMENSION as usize];
 
 ////////////////////
 

@@ -2,7 +2,7 @@ use crate::assets::full_grid::ConstGridValues;
 use crate::utils::grid_utils::grid_values_array_to_vec;
 
 use super::constants::LENGTH_DIMENSION;
-use super::file::read;
+use super::file::{read, write};
 use super::generator::{generate, remove_random_values};
 use super::solver::{locate_missing_box, solve};
 use super::validation::validate;
@@ -146,6 +146,10 @@ impl Grid {
         let values = solve(&self.get_values(), &missing_boxes).unwrap();
 
         self.values = values;
+    }
+
+    pub fn dump_file(&self, path: String) {
+        write(path, self.get_values());
     }
 }
 

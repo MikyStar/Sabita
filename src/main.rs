@@ -28,6 +28,7 @@ fn main() {
         ACTION::Generate => {
             let grid = Grid::generate(nb_missing);
             grid.print();
+            grid.dump_file(path.unwrap());
         }
         ACTION::Benchmark => {
             benchmark();
