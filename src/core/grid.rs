@@ -90,11 +90,11 @@ impl Grid {
     }
 
     pub fn generate(nb_to_remove: Option<u8>) -> Self {
-        let values = generate().unwrap();
+        let mut values = generate().unwrap();
 
         match nb_to_remove {
             Some(to_remove) => {
-                remove_random_values(&values, to_remove);
+                values = remove_random_values(&values, to_remove).0;
             }
             None => {}
         }

@@ -29,6 +29,9 @@ fn main() {
             let grid = Grid::generate(nb_missing);
             grid.print();
         }
+        ACTION::Benchmark => {
+            benchmark();
+        }
         ACTION::Version => {
             version();
         }
@@ -38,6 +41,8 @@ fn main() {
             help_generate();
             println!();
             help_solver();
+            println!();
+            help_benchmark();
         }
         ACTION::HelpGenerate => {
             help_generate();
@@ -85,6 +90,13 @@ fn showcase_generator() {
         "Is really valid: {}",
         validate(&generated.get_values()).is_ok()
     );
+}
+
+fn help_benchmark() {
+    let name: &str = env!("CARGO_PKG_NAME");
+
+    println!("Benchmark:");
+    println!("           {name} --benchmark");
 }
 
 fn version() {
