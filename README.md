@@ -4,6 +4,22 @@ Sabi is a Sudoku solver / generator made with Rust
 
 _'Sabi' (さび) means 'rust' in japanese_
 
+## CLI
+
+### Use
+
+```sh
+# Generator
+sabi g file/to/create # Generate a sudoku with no missing value
+sabi g file/to/create 50 # Generate a sudoku with 50 missing values
+
+# Solver
+sabi s file/to/solve # Solve the sudoku (check out file sudoku.example) to see format
+
+# Benchmark
+sabi --benchmark # Launch the benchmarking script, see section below
+```
+
 ## Performances
 
 Performances are benchmarked through the `src/core/benchmark.rs` and the results are written in the `benchmark.log` file
@@ -29,7 +45,7 @@ cargo test # Run all unit tests
 cargo test <file without extension> # Run specific test file inside the 'tests' folder (don't write it in path)
 cargo test <specific function name> # Run specific test function
 
-cargo add <package> [--dev] # Install a proect dependency (or a dev dependency)
+cargo add <package> [--dev] # Install a project dependency (or a dev dependency)
 cargo install <package> # Install a system wide dependency
 
 cargo doc # Generates HTML documentation
@@ -41,6 +57,6 @@ cargo clean # Remove 'targer' directory (build artifacts, doc ...)
 
 Git hooks are handled with [rusty-hook](https://github.com/swellaby/rusty-hook), to enable them after a fresh install, run `cargo build`
 
-## Tasks
+### Tasks
 
 Using [CLI-Manager](https://github.com/MikyStar/CLI-Manager) for task handling.

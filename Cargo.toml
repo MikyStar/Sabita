@@ -6,6 +6,7 @@ authors = ["Mike AUBENAS"]
 edition = "2021"
 readme = "README.md"
 rust-version = "1.83.0"
+repository = "https://github.com/MikyStar/Sabi"
 
 [dev-dependencies]
 rusty-hook = "^0.11.2"

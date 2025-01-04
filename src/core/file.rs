@@ -1,16 +1,13 @@
 use super::grid::GridValues;
 
-use std::fs::{self, File};
-use std::io::prelude::*;
+use std::fs;
 
 ////////////////////////////////////////
 
 pub fn read(path: String) -> GridValues {
     let mut values: GridValues = vec![];
 
-    let mut file = File::open(path).unwrap();
-    let mut contents = String::new();
-    file.read_to_string(&mut contents).unwrap();
+    let contents = fs::read_to_string(path).expect("Unable to read file '{path}'");
 
     let lines = contents.split("\n");
 
