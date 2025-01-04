@@ -59,6 +59,8 @@ cargo install <package> # Install a system wide dependency
 cargo doc # Generates HTML documentation
 
 cargo clean # Remove 'targer' directory (build artifacts, doc ...)
+
+cargo publish # Publish project to crates.io registry
 ```
 
 ### Git hooks
