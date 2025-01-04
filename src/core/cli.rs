@@ -1,4 +1,3 @@
-use core::panic;
 use std::env;
 use std::fmt;
 use std::path::Path;
@@ -80,10 +79,14 @@ pub fn parse_args() -> ArgParsed {
                 panic!("Path '{file_path}' already exists");
             }
 
-            let nb_missing = match args[2].parse::<u8>() {
-                Ok(number) => Some(number),
-                Err(_) => None,
-            };
+            let mut nb_missing = None;
+
+            if args.len() == 4 {
+                match (&args[3]).parse::<u8>() {
+                    Ok(number) => nb_missing = Some(number),
+                    Err(err) => panic!("Wrong number of box to remove: {}", err),
+                };
+            }
 
             ArgParsed {
                 action: ACTION::Generate,
