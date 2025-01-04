@@ -1,23 +1,31 @@
-# Sabi (さび)
+# Sabita (錆びた)
 
-Sabi is a Sudoku solver / generator made with Rust
+Sabita is a Sudoku solver / generator made with Rust
 
-_'Sabi' (さび) means 'rust' in japanese_
+_'Sabita' (錆びた) means 'rusty' in japanese_
 
 ## CLI
+
+### Install
+
+**You will need to [install Rust](https://www.rust-lang.org/tools/install)**
+
+```sh
+cargo install sabita
+```
 
 ### Use
 
 ```sh
 # Generator
-sabi g file/to/create # Generate a sudoku with no missing value
-sabi g file/to/create 50 # Generate a sudoku with 50 missing values
+sabita g file/to/create # Generate a sudoku with no missing value
+sabita g file/to/create 50 # Generate a sudoku with 50 missing values
 
 # Solver
-sabi s file/to/solve # Solve the sudoku (check out file sudoku.example) to see format
+sabita s file/to/solve # Solve the sudoku (check out file sudoku.example) to see format
 
 # Benchmark
-sabi --benchmark # Launch the benchmarking script, see section below
+sabita --benchmark # Launch the benchmarking script, see section below
 ```
 
 ## Performances

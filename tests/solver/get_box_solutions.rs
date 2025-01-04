@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod get_box_solutions {
-    use sabi::core::constants::TO_BE_SOLVED;
-    use sabi::core::grid::BoxLocation;
-    use sabi::core::solver::get_box_solutions;
+    use sabita::core::constants::TO_BE_SOLVED;
+    use sabita::core::grid::BoxLocation;
+    use sabita::core::solver::get_box_solutions;
 
     #[test]
     fn should_be_1() {

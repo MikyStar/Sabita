@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod solver_e2e {
-    use sabi::assets::full_grid::GRID_VALUES_1;
-    use sabi::core::constants::TO_BE_SOLVED;
-    use sabi::core::grid::Grid;
-    use sabi::core::validation::validate;
-    use sabi::utils::grid_utils::grid_values_array_to_vec;
+    use sabita::assets::full_grid::GRID_VALUES_1;
+    use sabita::core::constants::TO_BE_SOLVED;
+    use sabita::core::grid::Grid;
+    use sabita::core::validation::validate;
+    use sabita::utils::grid_utils::grid_values_array_to_vec;
 
     fn solve_test(nb_missing: u8) {
         let original = grid_values_array_to_vec(GRID_VALUES_1);

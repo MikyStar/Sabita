@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod generator_tests {
-    use sabi::assets::full_grid::GRID_VALUES_1;
-    use sabi::core::constants::LENGTH_DIMENSION;
-    use sabi::core::generator::generate;
-    use sabi::core::grid::GridValues;
-    use sabi::utils::grid_utils::grid_values_array_to_vec;
+    use sabita::assets::full_grid::GRID_VALUES_1;
+    use sabita::core::constants::LENGTH_DIMENSION;
+    use sabita::core::generator::generate;
+    use sabita::core::grid::GridValues;
+    use sabita::utils::grid_utils::grid_values_array_to_vec;
 
     ////////////////////
 

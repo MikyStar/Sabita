@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod validate_new_box {
-    use sabi::core::grid::BoxLocation;
-    use sabi::core::validation::validate_new_box;
+    use sabita::core::grid::BoxLocation;
+    use sabita::core::validation::validate_new_box;
 
     #[test]
     fn valid_1() {

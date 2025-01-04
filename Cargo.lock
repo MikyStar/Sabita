@@ -193,7 +193,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sabi"
+name = "sabita"
 version = "0.1.0"
 dependencies = [
  "humanize-duration",

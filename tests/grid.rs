@@ -1,9 +1,9 @@
 #[cfg(test)]
 mod grid_tests {
-    use sabi::assets::full_grid::{GRID_VALUES_1, GRID_VALUES_2};
-    use sabi::core::constants::TO_BE_SOLVED;
-    use sabi::core::grid::Grid;
-    use sabi::utils::grid_utils::grid_values_array_to_vec;
+    use sabita::assets::full_grid::{GRID_VALUES_1, GRID_VALUES_2};
+    use sabita::core::constants::TO_BE_SOLVED;
+    use sabita::core::grid::Grid;
+    use sabita::utils::grid_utils::grid_values_array_to_vec;
 
     ////////////////////
     // Valid grid
