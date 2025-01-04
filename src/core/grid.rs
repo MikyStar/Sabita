@@ -99,19 +99,19 @@ impl Grid {
             None => {}
         }
 
-        Grid { values }
+        Grid::new(values)
     }
 
     pub fn from_array(array: ConstGridValues) -> Self {
         let values = grid_values_array_to_vec(array);
 
-        Grid { values }
+        Grid::new(values)
     }
 
     pub fn from_file(path: String) -> Self {
         let values = read(path);
 
-        Grid { values }
+        Grid::new(values)
     }
 
     //////////
