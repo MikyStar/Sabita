@@ -2,6 +2,7 @@ use crate::assets::full_grid::ConstGridValues;
 use crate::utils::grid_utils::grid_values_array_to_vec;
 
 use super::constants::LENGTH_DIMENSION;
+use super::file::read;
 use super::generator::{generate, remove_random_values};
 use super::solver::{locate_missing_box, solve};
 use super::validation::validate;
@@ -88,14 +89,27 @@ impl Grid {
         Grid { values }
     }
 
-    pub fn generate() -> Self {
+    pub fn generate(nb_to_remove: Option<u8>) -> Self {
         let values = generate().unwrap();
+
+        match nb_to_remove {
+            Some(to_remove) => {
+                remove_random_values(&values, to_remove);
+            }
+            None => {}
+        }
 
         Grid { values }
     }
 
     pub fn from_array(array: ConstGridValues) -> Self {
         let values = grid_values_array_to_vec(array);
+
+        Grid { values }
+    }
+
+    pub fn from_file(path: String) -> Self {
+        let values = read(path);
 
         Grid { values }
     }

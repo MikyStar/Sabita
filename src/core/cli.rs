@@ -1,7 +1,6 @@
 use core::panic;
 use std::env;
 use std::fmt;
-use std::path;
 use std::path::Path;
 
 ////////////////////////////////////////
@@ -14,12 +13,15 @@ pub enum ACTION {
     HelpGenerate,
     HelpSolve,
     HelpFull,
+
+    Version,
 }
 
 #[derive(Debug)]
 pub struct ArgParsed {
-    action: ACTION,
-    path: Option<String>,
+    pub action: ACTION,
+    pub path: Option<String>,
+    pub nb_missing: Option<u8>,
 }
 
 impl fmt::Display for ArgParsed {
@@ -31,6 +33,8 @@ impl fmt::Display for ArgParsed {
             ACTION::HelpGenerate => "help generate",
             ACTION::HelpSolve => "help solve",
             ACTION::HelpFull => "help full",
+
+            ACTION::Version => "version",
         };
 
         let path = match &self.path {
@@ -38,7 +42,12 @@ impl fmt::Display for ArgParsed {
             None => "[none]".to_string(),
         };
 
-        write!(f, "action: {action}: path: {path}")
+        let nb_missing = match &self.nb_missing {
+            Some(val) => val.to_string(),
+            None => "[none]".to_string(),
+        };
+
+        write!(f, "action: {action}; path: {path}; nb_missing {nb_missing}")
     }
 }
 
@@ -52,24 +61,34 @@ pub fn parse_args() -> ArgParsed {
         return ArgParsed {
             action: ACTION::HelpFull,
             path: None,
+            nb_missing: None,
         };
     }
 
     match args[1].as_str() {
         "g" => {
-            if args.len() != 3 {
+            if args.len() < 3 {
                 return ArgParsed {
                     action: ACTION::HelpGenerate,
                     path: None,
+                    nb_missing: None,
                 };
             }
             let file_path = args[2].clone();
 
-            panic_bad_path(&file_path);
+            if Path::new(&file_path).exists() {
+                panic!("Path '{file_path}' already exists");
+            }
+
+            let nb_missing = match args[2].parse::<u8>() {
+                Ok(number) => Some(number),
+                Err(_) => None,
+            };
 
             ArgParsed {
                 action: ACTION::Generate,
                 path: Some(file_path),
+                nb_missing,
             }
         }
         "s" => {
@@ -77,29 +96,31 @@ pub fn parse_args() -> ArgParsed {
                 return ArgParsed {
                     action: ACTION::HelpSolve,
                     path: None,
+                    nb_missing: None,
                 };
             }
 
             let file_path = args[2].clone();
 
-            panic_bad_path(&file_path);
+            if !Path::new(&file_path).exists() {
+                panic!("Path '{file_path}' doesn't exists");
+            }
 
             ArgParsed {
                 action: ACTION::Solve,
                 path: Some(file_path),
+                nb_missing: None,
             }
         }
+        "-v" | "--version" => ArgParsed {
+            action: ACTION::Version,
+            path: None,
+            nb_missing: None,
+        },
         _ => ArgParsed {
             action: ACTION::HelpFull,
             path: None,
+            nb_missing: None,
         },
-    }
-}
-
-////////////////////
-
-fn panic_bad_path(path: &String) {
-    if !Path::new(&path).exists() {
-        panic!("Path '{path}' doesn't exists");
     }
 }

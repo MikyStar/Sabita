@@ -92,7 +92,7 @@ pub fn benchmark() {
 
 fn benchmark_one_generate() -> Duration {
     let start = Instant::now();
-    Grid::generate();
+    Grid::generate(None);
     start.elapsed()
 }
 
@@ -127,7 +127,7 @@ fn solv_64() -> Duration {
 }
 
 fn benchmark_one_solver(nb_to_remove: u8) -> Duration {
-    let mut grid = Grid::generate();
+    let mut grid = Grid::generate(None);
     grid.remove_random_values(nb_to_remove);
 
     let start = Instant::now();
