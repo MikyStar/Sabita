@@ -6,7 +6,7 @@ authors = ["Mike AUBENAS"]
 edition = "2021"
 readme = "README.md"
 rust-version = "1.83.0"
-repository = "https://github.com/MikyStar/Sabi"
+repository = "https://github.com/MikyStar/Sabita"
 license = "MIT"
 
 [dev-dependencies]
