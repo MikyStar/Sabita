@@ -21,5 +21,4 @@ jobs:
     - name: Build
       run: cargo build --verbose
     - name: Verifications
-      run: cargo make pre-commit
-
+      run: cargo make pre-merge

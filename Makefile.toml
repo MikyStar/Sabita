@@ -4,11 +4,22 @@
 
 [tasks.pre-commit]
 dependencies = [
+    "verifications",
+    "linter",
+]
+
+[tasks.pre-merge]
+dependencies = [
+    "verifications",
+    "linter-strict",
+]
+
+[tasks.verifications]
+dependencies = [
     "format-strict",
     "test",
     "outdated-strict",
     "security-strict",
-    "linter",
 ]
 
 [tasks.fix]
@@ -51,6 +62,11 @@ args = ["update"]
 [tasks.linter]
 command = "cargo"
 args = ["clippy"]
+
+[tasks.linter-strict]
+command = "cargo"
+args = ["clippy", "--", "-Dwarnings"]
+
 
 [tasks.linter-fix]
 command = "cargo"
