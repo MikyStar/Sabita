@@ -20,86 +20,16 @@
     },
     "datas": [
         {
-            "name": "git hooks",
-            "state": "todo",
-            "id": 0,
-            "timestamp": "28/12/2024",
-            "subtasks": [
-                {
-                    "name": "pre-merge",
-                    "state": "todo",
-                    "id": 2,
-                    "timestamp": "28/12/2024",
-                    "subtasks": [
-                        {
-                            "name": "benchmark solver and gen for current package version with hash from previous commit and append results on a same file accross version to trace perfs",
-                            "state": "todo",
-                            "id": 3,
-                            "timestamp": "28/12/2024"
-                        },
-                        {
-                            "name": "publish binary on github",
-                            "state": "todo",
-                            "id": 4,
-                            "timestamp": "28/12/2024"
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "name": "solver",
-            "state": "todo",
-            "id": 5,
-            "timestamp": "28/12/2024",
-            "subtasks": [
-                {
-                    "name": "checks if theres only one solutions",
-                    "state": "todo",
-                    "id": 9,
-                    "timestamp": "29/12/2024",
-                    "subtasks": [
-                        {
-                            "name": "make it smart: during the resolution process there should only be one solution remaining",
-                            "state": "todo",
-                            "id": 10,
-                            "timestamp": "29/12/2024"
-                        }
-                    ]
-                },
-                {
-                    "name": "improve the apply to remove the used value in everyreference to the boxes involved, might need to change the typing to references",
-                    "state": "todo",
-                    "id": 12,
-                    "timestamp": "30/12/2024"
-                }
-            ]
-        },
-        {
             "name": "generator",
-            "state": "todo",
+            "state": "done",
             "id": 6,
             "timestamp": "28/12/2024",
             "subtasks": [
                 {
                     "name": "can set a specific number of missing box or none",
-                    "state": "todo",
+                    "state": "done",
                     "id": 7,
                     "timestamp": "29/12/2024"
-                },
-                {
-                    "name": "checks if theres only one solutions",
-                    "state": "todo",
-                    "id": 8,
-                    "timestamp": "29/12/2024",
-                    "subtasks": [
-                        {
-                            "name": "for that solve it back and use tthe task #10",
-                            "state": "todo",
-                            "id": 11,
-                            "timestamp": "29/12/2024"
-                        }
-                    ]
                 },
                 {
                     "name": "during process, permute values like 1 into 7 and vice-versa, first and second rows (same region so no problems) and so on",
@@ -108,12 +38,6 @@
                     "timestamp": "03/01/2025"
                 }
             ]
-        },
-        {
-            "name": "customizable TO_BE_SOLVED marker",
-            "state": "todo",
-            "id": 14,
-            "timestamp": "02/01/2025"
         }
     ]
 }

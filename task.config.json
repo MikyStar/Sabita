@@ -1,5 +1,5 @@
 {
-  "storageFile": "./tasks/v0.2.0.json",
+  "storageFile": "./tasks/v0.3.0.json",
   "group": "state",
   "sort": "desc",
   "shouldNotPrintAfter": false,
