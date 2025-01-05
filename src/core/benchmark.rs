@@ -82,7 +82,7 @@ pub fn benchmark() {
 
     let results = FullBenchmark {
         solver: benchmark_solvers(),
-        generator: benchmark_fn(&benchmark_one_generate),
+        generator: benchmark_fn(benchmark_one_generate),
     };
 
     println!("{results}");
@@ -97,10 +97,10 @@ fn benchmark_one_generate() -> Duration {
 }
 
 fn benchmark_solvers() -> BenchmarkSolver {
-    let miss_10_thread = thread::spawn(|| benchmark_fn(&solv_10));
-    let miss_30_thread = thread::spawn(|| benchmark_fn(&solv_30));
-    let miss_50_thread = thread::spawn(|| benchmark_fn(&solv_50));
-    let miss_64_thread = thread::spawn(|| benchmark_fn(&solv_64));
+    let miss_10_thread = thread::spawn(|| benchmark_fn(solv_10));
+    let miss_30_thread = thread::spawn(|| benchmark_fn(solv_30));
+    let miss_50_thread = thread::spawn(|| benchmark_fn(solv_50));
+    let miss_64_thread = thread::spawn(|| benchmark_fn(solv_64));
 
     BenchmarkSolver {
         missing_ten: miss_10_thread.join().unwrap(),

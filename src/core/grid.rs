@@ -92,15 +92,12 @@ impl Grid {
     pub fn generate(nb_to_remove: Option<u8>) -> Self {
         let mut values = generate().unwrap();
 
-        match nb_to_remove {
-            Some(to_remove) => {
-                if to_remove >= MINIMUM_PROVIDED && to_remove <= MAX_NB_VALUES {
-                    println!("Carefull, {MINIMUM_PROVIDED} is considered the minimum number of values to provide to solve a sudoku");
-                }
-
-                values = remove_random_values(&values, to_remove).0;
+        if let Some(to_remove) = nb_to_remove {
+            if (MINIMUM_PROVIDED..=MAX_NB_VALUES).contains(&to_remove) {
+                println!("Carefull, {MINIMUM_PROVIDED} is considered the minimum number of values to provide to solve a sudoku");
             }
-            None => {}
+
+            values = remove_random_values(&values, to_remove).0;
         }
 
         Grid::new(values)
@@ -133,7 +130,7 @@ impl Grid {
     }
 
     pub fn remove_random_values(&mut self, nb_to_remove: u8) -> Vec<BoxLocation> {
-        let (values, locations) = remove_random_values(&mut self.values, nb_to_remove);
+        let (values, locations) = remove_random_values(&self.values, nb_to_remove);
 
         self.values = values;
 

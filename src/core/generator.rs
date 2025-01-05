@@ -36,7 +36,7 @@ pub fn generate() -> Result<GridValues, GeneratingSudokuError> {
         to_return = solve(&modified, &missing_locations).unwrap();
 
         if original != to_return {
-            round_counter = round_counter + 1;
+            round_counter += 1;
         }
     }
 

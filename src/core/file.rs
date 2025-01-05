@@ -18,11 +18,11 @@ pub fn read(path: String) -> GridValues {
         let mut val_line: Vec<u8> = vec![];
 
         for (col_index, val) in splitted.enumerate() {
-            if val == "" {
+            if val.is_empty() {
                 break;
             }
 
-            match (&val).parse::<u8>() {
+            match (val).parse::<u8>() {
                 Ok(number) => val_line.push(number),
                 Err(err) => panic!(
                     "Parsing file error, wrong value '{val}' at position [{line_index}:{col_index}]: {}",
@@ -31,7 +31,7 @@ pub fn read(path: String) -> GridValues {
             };
         }
 
-        if val_line.len() > 0 {
+        if !val_line.is_empty() {
             values.push(val_line);
         }
     }
@@ -39,7 +39,7 @@ pub fn read(path: String) -> GridValues {
     values
 }
 
-pub fn write(path: String, values: GridValues) -> () {
+pub fn write(path: String, values: GridValues) {
     let mut content: String = String::new();
 
     for line in values {

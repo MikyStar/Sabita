@@ -1,18 +1,12 @@
-use sabita::assets::full_grid::GRID_VALUES_1;
 use sabita::core::benchmark::benchmark;
 use sabita::core::cli::{parse_args, ArgParsed, ACTION};
-use sabita::core::grid::{print_2d_vec, Grid};
-use sabita::core::validation::validate;
-use sabita::utils::grid_utils::grid_values_array_to_vec;
+use sabita::core::grid::Grid;
+
+use std::process::exit;
 
 ////////////////////////////////////////
 
 fn main() {
-    // showcase_solver();
-    // println!();
-    // showcase_generator();
-    // println!();
-    // benchmark();
     let ArgParsed {
         action,
         path,
@@ -46,52 +40,21 @@ fn main() {
             help_benchmark();
         }
         ACTION::HelpGenerate => {
+            eprintln!("Wrong args for command generate\n");
             help_generate();
+
+            exit(-1);
         }
         ACTION::HelpSolve => {
+            eprintln!("Wrong args for command solve\n");
             help_solver();
+
+            exit(-1);
         }
     }
 }
 
 ////////////////////
-
-fn showcase_solver() {
-    println!("----- Solver -----\n");
-    let value_array = GRID_VALUES_1;
-    let original = grid_values_array_to_vec(value_array);
-    let mut to_solve = Grid::from_array(value_array);
-    to_solve.remove_random_values(70);
-
-    println!("Full grid");
-    to_solve.print();
-
-    let missing = to_solve.locate_missing_box();
-
-    println!("\nSolved");
-    to_solve.solve();
-    to_solve.print();
-
-    println!("\nSolved boxes {}", missing.len());
-
-    println!("Is same as start: {}", to_solve.get_values() == original);
-    println!(
-        "Is really valid: {}",
-        validate(&to_solve.get_values()).is_ok()
-    );
-}
-
-fn showcase_generator() {
-    println!("----- Generator -----\n");
-    let generated = Grid::generate(None);
-
-    println!("Generated");
-    print_2d_vec(&generated.get_values());
-    println!(
-        "Is really valid: {}",
-        validate(&generated.get_values()).is_ok()
-    );
-}
 
 fn help_benchmark() {
     let name: &str = env!("CARGO_PKG_NAME");
