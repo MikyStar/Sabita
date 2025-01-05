@@ -1,6 +1,6 @@
 ----------------------------------------
 
-Benchmarking v0.2.0 with 50 iterations
+Benchmarking sabita@v0.2.0 with 50 iterations
 
 ----- Solver -----
 
@@ -32,7 +32,7 @@ Slowest: 127ms 434µs 834ns
 
 ----------------------------------------
 
-Benchmarking v0.1.0 with 50 iterations
+Benchmarking sabita@v0.1.0 with 50 iterations
 
 ----- Solver -----
 

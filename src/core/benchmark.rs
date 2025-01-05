@@ -1,3 +1,4 @@
+use super::constants::{PKG_NAME, PKG_VERSION};
 use super::grid::Grid;
 
 use std::fmt;
@@ -75,10 +76,8 @@ impl fmt::Display for BenchmarkSolver {
 ////////////////////////////////////////
 
 pub fn benchmark() {
-    let version: &str = env!("CARGO_PKG_VERSION");
-
     println!("----------------------------------------\n");
-    println!("Benchmarking v{version} with {NB_TESTS} iterations\n");
+    println!("Benchmarking {PKG_NAME}@v{PKG_VERSION} with {NB_TESTS} iterations\n");
 
     let results = FullBenchmark {
         solver: benchmark_solvers(),
