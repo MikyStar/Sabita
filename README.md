@@ -1,5 +1,7 @@
 # Sabita (錆びた)
 
+![Lint/Security/Dependencies/Tests](https://github.com/MikyStar/Sabita/actions/workflows/rust.yml/badge.svg)
+
 Sabita is a Sudoku solver / generator made with Rust
 
 _'Sabita' (錆びた) means 'rusty' in japanese_
