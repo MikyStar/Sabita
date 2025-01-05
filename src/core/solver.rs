@@ -119,8 +119,7 @@ pub fn solve(
                 }
             }
         } else {
-            grid_copy[current_box_location.line as usize][current_box_location.column as usize] =
-                TO_BE_SOLVED;
+            grid_copy[current_box_location.line][current_box_location.column] = TO_BE_SOLVED;
         }
 
         match sol_found_index {
@@ -171,7 +170,7 @@ fn appy_sol(
     loc: &BoxLocation,
     value: &u8,
 ) -> Vec<usize> {
-    grid_copy[loc.line as usize][loc.column as usize] = *value;
+    grid_copy[loc.line][loc.column] = *value;
 
     let mut affected_indices = vec![];
 
@@ -196,7 +195,7 @@ fn rollback_sol(
     affected_box_solutions: Vec<usize>,
     value: &u8,
 ) {
-    grid_copy[loc.line as usize][loc.column as usize] = TO_BE_SOLVED;
+    grid_copy[loc.line][loc.column] = TO_BE_SOLVED;
 
     for index in affected_box_solutions {
         involved_boxes[index].solutions.push(*value);
@@ -286,7 +285,7 @@ pub fn get_box_solutions(
 
     for possibility in (TO_BE_SOLVED + 1)..(LENGTH_DIMENSION + 1) {
         let mut grid_to_test = grid_values.clone();
-        grid_to_test[location.line as usize][location.column as usize] = possibility;
+        grid_to_test[location.line][location.column] = possibility;
 
         if validate_new_box(&grid_to_test, location).is_ok() {
             answers.push(possibility);
@@ -305,11 +304,9 @@ pub fn get_box_solutions(
 pub fn locate_missing_box(values: &GridValues) -> Vec<BoxLocation> {
     let mut locations = vec![];
 
-    for (row_index, row) in values.iter().enumerate() {
-        for (column_index, value) in row.iter().enumerate() {
+    for (line, row) in values.iter().enumerate() {
+        for (column, value) in row.iter().enumerate() {
             if *value == 0 {
-                let line = row_index as u8;
-                let column = column_index as u8;
                 let region = location_to_region(&line, &column).unwrap();
 
                 let loc = BoxLocation {

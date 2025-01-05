@@ -84,7 +84,7 @@ pub fn parse_args() -> ArgParsed {
             let mut nb_missing = None;
 
             if args.len() == 4 {
-                match (&args[3]).parse::<u8>() {
+                match (args[3]).parse::<u8>() {
                     Ok(number) => nb_missing = Some(number),
                     Err(err) => panic!("Wrong number of box to remove: {}", err),
                 };

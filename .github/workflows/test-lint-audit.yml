@@ -1,10 +1,10 @@
-name: Rust
+name: Test Lint Audit
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "*" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "*" ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -21,5 +21,4 @@ jobs:
     - name: Build
       run: cargo build --verbose
     - name: Verifications
-      run: cargo make pre-commit
-
+      run: cargo make pre-merge

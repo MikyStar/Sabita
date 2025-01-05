@@ -25,10 +25,7 @@ mod solver_e2e {
                 }
             }
         }
-        assert!(
-            unsolved_box_found == false,
-            "At least one unsolved box remaining"
-        );
+        assert!(!unsolved_box_found, "At least one unsolved box remaining");
     }
 
     //////////
