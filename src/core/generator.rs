@@ -1,7 +1,7 @@
 use crate::assets::full_grid::GRID_VALUES_1;
 use crate::utils::grid_utils::grid_values_array_to_vec;
 
-use super::constants::{LENGTH_DIMENSION, TO_BE_SOLVED};
+use super::constants::{LENGTH_DIMENSION, MAX_NB_VALUES, TO_BE_SOLVED};
 use super::grid::{location_to_region, BoxLocation, GridValues};
 use super::solver::{locate_missing_box, solve};
 
@@ -49,7 +49,7 @@ pub fn remove_random_values(
     values: &GridValues,
     nb_to_remove: u8,
 ) -> (GridValues, Vec<BoxLocation>) {
-    if nb_to_remove >= LENGTH_DIMENSION * LENGTH_DIMENSION {
+    if nb_to_remove >= MAX_NB_VALUES {
         panic!("Can not remove that much values")
     }
 

@@ -1,7 +1,7 @@
 use crate::assets::full_grid::ConstGridValues;
 use crate::utils::grid_utils::grid_values_array_to_vec;
 
-use super::constants::LENGTH_DIMENSION;
+use super::constants::{LENGTH_DIMENSION, MAX_NB_VALUES, MINIMUM_PROVIDED};
 use super::file::{read, write};
 use super::generator::{generate, remove_random_values};
 use super::solver::{locate_missing_box, solve};
@@ -94,6 +94,10 @@ impl Grid {
 
         match nb_to_remove {
             Some(to_remove) => {
+                if to_remove >= MINIMUM_PROVIDED && to_remove <= MAX_NB_VALUES {
+                    println!("Carefull, {MINIMUM_PROVIDED} is considered the minimum number of values to provide to solve a sudoku");
+                }
+
                 values = remove_random_values(&values, to_remove).0;
             }
             None => {}
