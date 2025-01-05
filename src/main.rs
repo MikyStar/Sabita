@@ -43,13 +43,13 @@ fn main() {
             eprintln!("Wrong args for command generate\n");
             help_generate();
 
-            exit(-1);
+            exit(1);
         }
         ACTION::HelpSolve => {
             eprintln!("Wrong args for command solve\n");
             help_solver();
 
-            exit(-1);
+            exit(1);
         }
     }
 }
