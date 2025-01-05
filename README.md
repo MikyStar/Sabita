@@ -28,6 +28,14 @@ sabita s file/to/solve # Solve the sudoku (check out file sudoku.example) to see
 
 # Benchmark
 sabita --benchmark # Launch the benchmarking script, see section below
+
+# Help
+sabita -h
+sabita --help
+
+# Version
+sabita -v
+sabita --version
 ```
 
 ## Performances
