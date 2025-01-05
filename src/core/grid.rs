@@ -16,8 +16,8 @@ pub type GridValues = Vec<Vec<u8>>;
 
 #[derive(Debug, Clone)]
 pub struct BoxLocation {
-    pub line: u8,
-    pub column: u8,
+    pub line: usize,
+    pub column: usize,
     pub region: u8,
 }
 
@@ -162,8 +162,8 @@ pub fn print_2d_vec(grid: &GridValues) {
 }
 
 /// Parse coordinates (line, column) into a region index
-pub fn location_to_region(line: &u8, col: &u8) -> Result<u8, Box<dyn Error>> {
-    let third_of_length = LENGTH_DIMENSION / 3;
+pub fn location_to_region(line: &usize, col: &usize) -> Result<u8, Box<dyn Error>> {
+    let third_of_length = (LENGTH_DIMENSION / 3) as usize;
 
     for index in 0..LENGTH_DIMENSION {
         let (start_row, start_column) = region_to_location(&index);
@@ -183,17 +183,17 @@ pub fn location_to_region(line: &u8, col: &u8) -> Result<u8, Box<dyn Error>> {
 }
 
 /// Parse a region index into coordinates (line, column)
-pub fn region_to_location(region_index: &u8) -> (u8, u8) {
+pub fn region_to_location(region_index: &u8) -> (usize, usize) {
     match region_index {
-        0 => (0_u8, 0_u8),
-        1 => (0_u8, 3_u8),
-        2 => (0_u8, 6_u8),
-        3 => (3_u8, 0_u8),
-        4 => (3_u8, 3_u8),
-        5 => (3_u8, 6_u8),
-        6 => (6_u8, 0_u8),
-        7 => (6_u8, 3_u8),
-        8 => (6_u8, 6_u8),
+        0 => (0_usize, 0_usize),
+        1 => (0_usize, 3_usize),
+        2 => (0_usize, 6_usize),
+        3 => (3_usize, 0_usize),
+        4 => (3_usize, 3_usize),
+        5 => (3_usize, 6_usize),
+        6 => (6_usize, 0_usize),
+        7 => (6_usize, 3_usize),
+        8 => (6_usize, 6_usize),
         _ => panic!("Region out of range"),
     }
 }

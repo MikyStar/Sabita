@@ -56,8 +56,8 @@ pub fn remove_random_values(
     let mut loc_removed = vec![];
 
     while loc_removed.len() < nb_to_remove.into() {
-        let line = pos.sample(&mut rng);
-        let column = pos.sample(&mut rng);
+        let line = pos.sample(&mut rng) as usize;
+        let column = pos.sample(&mut rng) as usize;
 
         let location = BoxLocation {
             line,
