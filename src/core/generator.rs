@@ -32,7 +32,7 @@ pub fn generate() -> Result<GridValues, GeneratingSudokuError> {
     random_permutations(&mut modified);
     swap_lines(&mut modified);
 
-    let missing_locations = locate_missing_box(&mut modified);
+    let missing_locations = locate_missing_box(&modified);
     let to_return = solve(&modified, &missing_locations).unwrap();
 
     Ok(to_return)
