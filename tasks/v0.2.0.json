@@ -103,7 +103,7 @@
                 },
                 {
                     "name": "during process, permute values like 1 into 7 and vice-versa, first and second rows (same region so no problems) and so on",
-                    "state": "todo",
+                    "state": "done",
                     "id": 1,
                     "timestamp": "03/01/2025"
                 }
