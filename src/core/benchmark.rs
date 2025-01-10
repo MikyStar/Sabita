@@ -2,7 +2,7 @@ use super::constants::{PKG_NAME, PKG_VERSION};
 use super::grid::Grid;
 
 use std::fmt;
-use std::sync::{Arc, Mutex};
+use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -73,16 +73,68 @@ impl fmt::Display for BenchmarkSolver {
     }
 }
 
+////////////////////
+
+pub struct BenchmarkParams {
+    f: Box<dyn Fn() -> Duration + Send + Sync + 'static>,
+    on_thread_message: Box<dyn Fn(ThreadMessage) + 'static>,
+}
+
+pub enum ThreadMessageType {
+    Start,
+    Stop,
+}
+
+impl fmt::Display for ThreadMessageType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let txt = match self {
+            ThreadMessageType::Start => "start",
+            ThreadMessageType::Stop => "stop",
+        };
+
+        write!(f, "{txt}")
+    }
+}
+
+pub struct ThreadMessage {
+    msg_type: ThreadMessageType,
+    id: u8,
+}
+
 ////////////////////////////////////////
 
 pub fn benchmark() {
     println!("----------------------------------------\n");
     println!("Benchmarking {PKG_NAME}@v{PKG_VERSION} with {NB_TESTS} iterations\n");
 
+    // let started_gen: Arc<Mutex<u8>> = Arc::new(Mutex::new(0));
+    // let ended_gen: Arc<Mutex<u8>> = Arc::new(Mutex::new(0));
+
+    let (tx, rx) = mpsc::channel::<ThreadMessage>();
+
     let results = FullBenchmark {
         solver: benchmark_solvers(),
-        generator: benchmark_fn(benchmark_one_generate),
+        generator: (|| {
+            // let started_gen_clone = Arc::clone(&started_gen);
+            // let mut started = started_gen_clone.lock().unwrap();
+            // let ended_gen_clone = Arc::clone(&ended_gen);
+            // let mut ended = ended_gen_clone.lock().unwrap();
+            let clone = tx.clone();
+
+            benchmark_fn(BenchmarkParams {
+                f: Box::new(benchmark_one_generate),
+                on_thread_message: Box::new(move |msg: ThreadMessage| {
+                    clone.send(msg).unwrap();
+                }),
+            })
+        })(),
     };
+
+    drop(tx);
+
+    for received in rx {
+        println!("----- gen: {} {}", received.msg_type, received.id);
+    }
 
     println!("{results}");
 }
@@ -96,10 +148,43 @@ fn benchmark_one_generate() -> Duration {
 }
 
 fn benchmark_solvers() -> BenchmarkSolver {
-    let miss_10_thread = thread::spawn(|| benchmark_fn(solv_10));
-    let miss_30_thread = thread::spawn(|| benchmark_fn(solv_30));
-    let miss_50_thread = thread::spawn(|| benchmark_fn(solv_50));
-    let miss_64_thread = thread::spawn(|| benchmark_fn(solv_64));
+    let (tx, rx) = mpsc::channel::<ThreadMessage>();
+
+    fn on_msg(msg: ThreadMessage) {
+        println!("Solver thread {}: {}", msg.id, msg.msg_type);
+    }
+
+    let miss_10_thread = thread::spawn(|| {
+        benchmark_fn(BenchmarkParams {
+            f: Box::new(solv_10),
+            on_thread_message: Box::new(move |msg| {
+                let clone = tx.clone();
+                clone.send(msg).unwrap();
+            }),
+        })
+    });
+    let miss_30_thread = thread::spawn(|| {
+        benchmark_fn(BenchmarkParams {
+            f: Box::new(solv_30),
+            on_thread_message: Box::new(on_msg),
+        })
+    });
+    let miss_50_thread = thread::spawn(|| {
+        benchmark_fn(BenchmarkParams {
+            f: Box::new(solv_50),
+            on_thread_message: Box::new(on_msg),
+        })
+    });
+    let miss_64_thread = thread::spawn(|| {
+        benchmark_fn(BenchmarkParams {
+            f: Box::new(solv_64),
+            on_thread_message: Box::new(on_msg),
+        })
+    });
+
+    for received in rx {
+        println!("----- solv: {} {}", received.msg_type, received.id);
+    }
 
     BenchmarkSolver {
         missing_ten: miss_10_thread.join().unwrap(),
@@ -136,7 +221,14 @@ fn benchmark_one_solver(nb_to_remove: u8) -> Duration {
 
 ////////////////////
 
-fn benchmark_fn(f: impl Fn() -> Duration + Send + Sync + 'static) -> BenchmarkResult {
+fn benchmark_fn(args: BenchmarkParams) -> BenchmarkResult {
+    let BenchmarkParams {
+        f,
+        on_thread_message,
+    } = args;
+
+    let (tx, rx) = mpsc::channel();
+
     let func = Arc::new(f);
 
     let faster = Arc::new(Mutex::new(None));
@@ -145,14 +237,25 @@ fn benchmark_fn(f: impl Fn() -> Duration + Send + Sync + 'static) -> BenchmarkRe
 
     let mut thread_handles = vec![];
 
-    for _i in 0..NB_TESTS {
-        let func_clone = Arc::clone(&func);
+    for i in 0..NB_TESTS {
+        let tx_clone = tx.clone();
+
+        let _func_clone = Arc::clone(&func);
         let faster_clone = Arc::clone(&faster);
         let slower_clone = Arc::clone(&slower);
         let full_time_clone = Arc::clone(&full_time);
 
         let handle = thread::spawn(move || {
-            let res = func_clone();
+            tx_clone
+                .send(ThreadMessage {
+                    msg_type: ThreadMessageType::Start,
+                    id: i,
+                })
+                .unwrap();
+
+            // let res = func_clone();
+            let res = Duration::new(5, 0);
+            thread::sleep(res);
 
             {
                 let mut fast = faster_clone.lock().unwrap();
@@ -187,9 +290,22 @@ fn benchmark_fn(f: impl Fn() -> Duration + Send + Sync + 'static) -> BenchmarkRe
                     }
                 }
             }
+
+            tx_clone
+                .send(ThreadMessage {
+                    msg_type: ThreadMessageType::Stop,
+                    id: i,
+                })
+                .unwrap();
         });
 
         thread_handles.push(handle);
+    }
+    // Drop the original sender to avoid deadlock (main thread won't produce messages)
+    drop(tx);
+
+    for received in rx {
+        on_thread_message(received);
     }
 
     for handle in thread_handles {
