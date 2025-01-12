@@ -1,6 +1,7 @@
 use super::constants::{PKG_NAME, PKG_VERSION};
 use super::grid::Grid;
 
+use mpsc::SyncSender;
 use std::fmt;
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
@@ -32,7 +33,7 @@ impl fmt::Display for FullBenchmark {
 
 ////////////////////
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct BenchmarkResult {
     fastest: Duration,
     slowest: Duration,
@@ -77,28 +78,72 @@ impl fmt::Display for BenchmarkSolver {
 
 pub struct BenchmarkParams {
     f: Box<dyn Fn() -> Duration + Send + Sync + 'static>,
-    on_thread_message: Box<dyn Fn(ThreadMessage) + 'static>,
+    on_thread_message: Box<dyn Fn(ThreadLifecycleMessage) + 'static>,
 }
 
-pub enum ThreadMessageType {
+#[derive(Debug, Copy, Clone)]
+pub enum ThreadLifecycleMsgType {
     Start,
     Stop,
 }
 
-impl fmt::Display for ThreadMessageType {
+impl fmt::Display for ThreadLifecycleMsgType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let txt = match self {
-            ThreadMessageType::Start => "start",
-            ThreadMessageType::Stop => "stop",
+            ThreadLifecycleMsgType::Start => "start",
+            ThreadLifecycleMsgType::Stop => "stop",
         };
 
         write!(f, "{txt}")
     }
 }
 
-pub struct ThreadMessage {
-    msg_type: ThreadMessageType,
+#[derive(Debug, Copy, Clone)]
+pub struct ThreadLifecycleMessage {
+    msg_type: ThreadLifecycleMsgType,
     id: u8,
+}
+
+#[derive(Debug, Copy, Clone)]
+pub enum FunctionName {
+    Generate,
+    Solv10,
+    Solv30,
+    Solv50,
+    Solv64,
+}
+
+impl fmt::Display for FunctionName {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let txt = match self {
+            FunctionName::Generate => "generate",
+            FunctionName::Solv10 => "solv10",
+            FunctionName::Solv30 => "solv30",
+            FunctionName::Solv50 => "solv50",
+            FunctionName::Solv64 => "solv64",
+        };
+
+        write!(f, "{txt}")
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+pub enum ThreadMessageType {
+    Lifecycle,
+    Result,
+}
+
+#[derive(Copy, Clone)]
+pub struct FuncThreadMessage {
+    msg_type: ThreadMessageType,
+    msg: ThreadMessage,
+    func: FunctionName,
+}
+
+#[derive(Copy, Clone)]
+pub union ThreadMessage {
+    lifecycle_msg: ThreadLifecycleMessage,
+    result_msg: BenchmarkResult,
 }
 
 ////////////////////////////////////////
@@ -107,36 +152,56 @@ pub fn benchmark() {
     println!("----------------------------------------\n");
     println!("Benchmarking {PKG_NAME}@v{PKG_VERSION} with {NB_TESTS} iterations\n");
 
-    // let started_gen: Arc<Mutex<u8>> = Arc::new(Mutex::new(0));
-    // let ended_gen: Arc<Mutex<u8>> = Arc::new(Mutex::new(0));
+    let (tx, rx) = mpsc::sync_channel::<FuncThreadMessage>(2);
 
-    let (tx, rx) = mpsc::channel::<ThreadMessage>();
+    // let results = FullBenchmark {
+    //     solver: benchmark_solvers(tx.clone()),
+    //     generator: (|| {
+    //         let clone = tx.clone();
+    //
+    //         benchmark_fn(BenchmarkParams {
+    //             f: Box::new(benchmark_one_generate),
+    //             on_thread_message: Box::new(move |msg: ThreadMessage| {
+    //                 clone
+    //                     .send(BenchThreadMessage {
+    //                         thread_msg: msg,
+    //                         func: FunctionName::Generate,
+    //                     })
+    //                     .unwrap();
+    //             }),
+    //         })
+    //     })(),
+    // };
 
-    let results = FullBenchmark {
-        solver: benchmark_solvers(),
-        generator: (|| {
-            // let started_gen_clone = Arc::clone(&started_gen);
-            // let mut started = started_gen_clone.lock().unwrap();
-            // let ended_gen_clone = Arc::clone(&ended_gen);
-            // let mut ended = ended_gen_clone.lock().unwrap();
-            let clone = tx.clone();
-
-            benchmark_fn(BenchmarkParams {
-                f: Box::new(benchmark_one_generate),
-                on_thread_message: Box::new(move |msg: ThreadMessage| {
-                    clone.send(msg).unwrap();
-                }),
-            })
-        })(),
-    };
-
-    drop(tx);
+    benchmark_solvers2(tx);
 
     for received in rx {
-        println!("----- gen: {} {}", received.msg_type, received.id);
+        let FuncThreadMessage {
+            func,
+            msg_type,
+            msg,
+        } = received;
+
+        unsafe {
+            match msg_type {
+                ThreadMessageType::Lifecycle => {
+                    let parsed_msg: ThreadLifecycleMessage = msg.lifecycle_msg;
+
+                    println!(
+                        "===== LIFE {}: {} {}",
+                        func, parsed_msg.msg_type, parsed_msg.id
+                    );
+                }
+                ThreadMessageType::Result => {
+                    let parsed_msg: BenchmarkResult = msg.result_msg;
+
+                    println!("===== RES {}: {}", func, parsed_msg);
+                }
+            }
+        }
     }
 
-    println!("{results}");
+    // println!("{results}");
 }
 
 ////////////////////
@@ -147,20 +212,131 @@ fn benchmark_one_generate() -> Duration {
     start.elapsed()
 }
 
-fn benchmark_solvers() -> BenchmarkSolver {
-    let (tx, rx) = mpsc::channel::<ThreadMessage>();
+fn benchmark_solvers2(sender: SyncSender<FuncThreadMessage>) {
+    let s10 = sender.clone();
+    thread::spawn(move || {
+        let func = FunctionName::Solv10;
+        let s10_copy = s10.clone();
 
-    fn on_msg(msg: ThreadMessage) {
+        let res = benchmark_fn(BenchmarkParams {
+            f: Box::new(solv_10),
+            on_thread_message: Box::new(move |msg| {
+                s10.send(FuncThreadMessage {
+                    func,
+                    msg_type: ThreadMessageType::Lifecycle,
+                    msg: ThreadMessage { lifecycle_msg: msg },
+                })
+                .unwrap();
+            }),
+        });
+
+        s10_copy
+            .send(FuncThreadMessage {
+                func,
+                msg_type: ThreadMessageType::Result,
+                msg: ThreadMessage { result_msg: res },
+            })
+            .unwrap();
+    });
+
+    let s30 = sender.clone();
+    thread::spawn(move || {
+        let func = FunctionName::Solv30;
+        let s30_copy = s30.clone();
+
+        let res = benchmark_fn(BenchmarkParams {
+            f: Box::new(solv_30),
+            on_thread_message: Box::new(move |msg| {
+                s30.send(FuncThreadMessage {
+                    func,
+                    msg_type: ThreadMessageType::Lifecycle,
+                    msg: ThreadMessage { lifecycle_msg: msg },
+                })
+                .unwrap();
+            }),
+        });
+
+        s30_copy
+            .send(FuncThreadMessage {
+                func,
+                msg_type: ThreadMessageType::Result,
+                msg: ThreadMessage { result_msg: res },
+            })
+            .unwrap();
+    });
+
+    let s50 = sender.clone();
+    thread::spawn(move || {
+        let func = FunctionName::Solv50;
+        let s50_copy = s50.clone();
+
+        let res = benchmark_fn(BenchmarkParams {
+            f: Box::new(solv_10),
+            on_thread_message: Box::new(move |msg| {
+                s50.send(FuncThreadMessage {
+                    func,
+                    msg_type: ThreadMessageType::Lifecycle,
+                    msg: ThreadMessage { lifecycle_msg: msg },
+                })
+                .unwrap();
+            }),
+        });
+
+        s50_copy
+            .send(FuncThreadMessage {
+                func,
+                msg_type: ThreadMessageType::Result,
+                msg: ThreadMessage { result_msg: res },
+            })
+            .unwrap();
+    });
+
+    let s64 = sender.clone();
+    thread::spawn(move || {
+        let func = FunctionName::Solv64;
+        let s64_copy = s64.clone();
+
+        let res = benchmark_fn(BenchmarkParams {
+            f: Box::new(solv_64),
+            on_thread_message: Box::new(move |msg| {
+                s64.send(FuncThreadMessage {
+                    func,
+                    msg_type: ThreadMessageType::Lifecycle,
+                    msg: ThreadMessage { lifecycle_msg: msg },
+                })
+                .unwrap();
+            }),
+        });
+
+        s64_copy
+            .send(FuncThreadMessage {
+                func,
+                msg_type: ThreadMessageType::Result,
+                msg: ThreadMessage { result_msg: res },
+            })
+            .unwrap();
+    });
+}
+
+fn benchmark_solvers(sender: SyncSender<FuncThreadMessage>) -> BenchmarkSolver {
+    fn on_msg(msg: ThreadLifecycleMessage) {
         println!("Solver thread {}: {}", msg.id, msg.msg_type);
     }
 
-    let miss_10_thread = thread::spawn(|| {
+    let miss_10_thread = thread::spawn(move || {
         benchmark_fn(BenchmarkParams {
             f: Box::new(solv_10),
-            on_thread_message: Box::new(move |msg| {
-                let clone = tx.clone();
-                clone.send(msg).unwrap();
-            }),
+            on_thread_message: Box::new(on_msg),
+            // on_thread_message: Box::new(move |msg| {
+            //     let clone = sender.clone();
+            //
+            //     clone
+            //         .send(FuncThreadMessage {
+            //             msg,
+            //             func: FunctionName::Solv10,
+            //         })
+            //         .unwrap();
+            // }),
         })
     });
     let miss_30_thread = thread::spawn(|| {
@@ -181,10 +357,6 @@ fn benchmark_solvers() -> BenchmarkSolver {
             on_thread_message: Box::new(on_msg),
         })
     });
-
-    for received in rx {
-        println!("----- solv: {} {}", received.msg_type, received.id);
-    }
 
     BenchmarkSolver {
         missing_ten: miss_10_thread.join().unwrap(),
@@ -247,8 +419,8 @@ fn benchmark_fn(args: BenchmarkParams) -> BenchmarkResult {
 
         let handle = thread::spawn(move || {
             tx_clone
-                .send(ThreadMessage {
-                    msg_type: ThreadMessageType::Start,
+                .send(ThreadLifecycleMessage {
+                    msg_type: ThreadLifecycleMsgType::Start,
                     id: i,
                 })
                 .unwrap();
@@ -292,8 +464,8 @@ fn benchmark_fn(args: BenchmarkParams) -> BenchmarkResult {
             }
 
             tx_clone
-                .send(ThreadMessage {
-                    msg_type: ThreadMessageType::Stop,
+                .send(ThreadLifecycleMessage {
+                    msg_type: ThreadLifecycleMsgType::Stop,
                     id: i,
                 })
                 .unwrap();
