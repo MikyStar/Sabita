@@ -1,7 +1,7 @@
 use super::constants::{PKG_NAME, PKG_VERSION};
 use super::grid::Grid;
 
-use mpsc::SyncSender;
+use mpsc::{Receiver, SyncSender};
 use std::fmt;
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
@@ -104,7 +104,7 @@ pub struct ThreadLifecycleMessage {
     id: u8,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum FunctionName {
     Generate,
     Solv10,
@@ -182,30 +182,10 @@ pub fn benchmark() {
         },
     ];
 
+    let f_names = to_bench.iter().map(|f| f.name).collect();
+
     execute_benchmarks(tx, to_bench);
-
-    for received in rx {
-        let FuncThreadMessage {
-            func,
-            msg_type,
-            msg,
-        } = received;
-
-        unsafe {
-            match msg_type {
-                ThreadMessageType::Lifecycle => {
-                    let parsed_msg: ThreadLifecycleMessage = msg.lifecycle_msg;
-
-                    println!("{} {} {}", parsed_msg.msg_type, func, parsed_msg.id);
-                }
-                ThreadMessageType::Result => {
-                    let parsed_msg: BenchmarkResult = msg.result_msg;
-
-                    println!("===== RES {}: {}", func, parsed_msg);
-                }
-            }
-        }
-    }
+    handle_messages(rx, f_names);
 }
 
 ////////////////////
@@ -242,6 +222,58 @@ fn solv_64() -> Duration {
 }
 
 ////////////////////
+
+fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<FunctionName>) {
+    let mut started = vec![0; func_names.len()];
+    let mut stopped = vec![0; func_names.len()];
+    let mut results: Vec<Option<BenchmarkResult>> = vec![None; func_names.len()];
+
+    for received in receiver {
+        let FuncThreadMessage {
+            func,
+            msg_type,
+            msg,
+        } = received;
+
+        let func_index = func_names.iter().position(|&r| r == func).unwrap();
+
+        unsafe {
+            match msg_type {
+                ThreadMessageType::Lifecycle => {
+                    let ThreadLifecycleMessage {
+                        msg_type: lifecycle_type,
+                        id,
+                    } = msg.lifecycle_msg;
+
+                    match lifecycle_type {
+                        ThreadLifecycleMsgType::Start => {
+                            started[func_index] += 1;
+                        }
+                        ThreadLifecycleMsgType::Stop => {
+                            stopped[func_index] += 1;
+                        }
+                    }
+
+                    println!();
+                    println!("{func} {lifecycle_type} {id}");
+                    for (i, f_name) in func_names.clone().into_iter().enumerate() {
+                        let nb_started = started[i];
+                        let nb_stopped = stopped[i];
+
+                        println!("{f_name}: started {nb_started} ; stopped {nb_stopped}");
+                    }
+                }
+                ThreadMessageType::Result => {
+                    let parsed_msg: BenchmarkResult = msg.result_msg;
+
+                    results[func_index] = Some(parsed_msg);
+
+                    println!("==== {func} {results:?}");
+                }
+            }
+        }
+    }
+}
 
 fn execute_benchmarks(sender: SyncSender<FuncThreadMessage>, functions: Vec<BenchmarkFunction>) {
     for bench_func in functions {
