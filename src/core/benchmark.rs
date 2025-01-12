@@ -146,34 +146,43 @@ pub union ThreadMessage {
     result_msg: BenchmarkResult,
 }
 
+pub struct BenchmarkFunction {
+    name: FunctionName,
+    f: Box<dyn Fn() -> Duration + Send + Sync + 'static>,
+}
+
 ////////////////////////////////////////
 
 pub fn benchmark() {
     println!("----------------------------------------\n");
     println!("Benchmarking {PKG_NAME}@v{PKG_VERSION} with {NB_TESTS} iterations\n");
 
-    let (tx, rx) = mpsc::sync_channel::<FuncThreadMessage>(2);
+    let (tx, rx) = mpsc::sync_channel::<FuncThreadMessage>(1);
 
-    // let results = FullBenchmark {
-    //     solver: benchmark_solvers(tx.clone()),
-    //     generator: (|| {
-    //         let clone = tx.clone();
-    //
-    //         benchmark_fn(BenchmarkParams {
-    //             f: Box::new(benchmark_one_generate),
-    //             on_thread_message: Box::new(move |msg: ThreadMessage| {
-    //                 clone
-    //                     .send(BenchThreadMessage {
-    //                         thread_msg: msg,
-    //                         func: FunctionName::Generate,
-    //                     })
-    //                     .unwrap();
-    //             }),
-    //         })
-    //     })(),
-    // };
+    let to_bench: Vec<BenchmarkFunction> = vec![
+        BenchmarkFunction {
+            name: FunctionName::Solv10,
+            f: Box::new(solv_10),
+        },
+        BenchmarkFunction {
+            name: FunctionName::Solv30,
+            f: Box::new(solv_30),
+        },
+        BenchmarkFunction {
+            name: FunctionName::Solv50,
+            f: Box::new(solv_50),
+        },
+        BenchmarkFunction {
+            name: FunctionName::Solv64,
+            f: Box::new(solv_64),
+        },
+        BenchmarkFunction {
+            name: FunctionName::Generate,
+            f: Box::new(benchmark_one_generate),
+        },
+    ];
 
-    benchmark_solvers2(tx);
+    execute_benchmarks(tx, to_bench);
 
     for received in rx {
         let FuncThreadMessage {
@@ -187,10 +196,7 @@ pub fn benchmark() {
                 ThreadMessageType::Lifecycle => {
                     let parsed_msg: ThreadLifecycleMessage = msg.lifecycle_msg;
 
-                    println!(
-                        "===== LIFE {}: {} {}",
-                        func, parsed_msg.msg_type, parsed_msg.id
-                    );
+                    println!("{} {} {}", parsed_msg.msg_type, func, parsed_msg.id);
                 }
                 ThreadMessageType::Result => {
                     let parsed_msg: BenchmarkResult = msg.result_msg;
@@ -200,8 +206,6 @@ pub fn benchmark() {
             }
         }
     }
-
-    // println!("{results}");
 }
 
 ////////////////////
@@ -212,158 +216,13 @@ fn benchmark_one_generate() -> Duration {
     start.elapsed()
 }
 
-fn benchmark_solvers2(sender: SyncSender<FuncThreadMessage>) {
-    let s10 = sender.clone();
-    thread::spawn(move || {
-        let func = FunctionName::Solv10;
-        let s10_copy = s10.clone();
+fn benchmark_one_solver(nb_to_remove: u8) -> Duration {
+    let mut grid = Grid::generate(None);
+    grid.remove_random_values(nb_to_remove);
 
-        let res = benchmark_fn(BenchmarkParams {
-            f: Box::new(solv_10),
-            on_thread_message: Box::new(move |msg| {
-                s10.send(FuncThreadMessage {
-                    func,
-                    msg_type: ThreadMessageType::Lifecycle,
-                    msg: ThreadMessage { lifecycle_msg: msg },
-                })
-                .unwrap();
-            }),
-        });
-
-        s10_copy
-            .send(FuncThreadMessage {
-                func,
-                msg_type: ThreadMessageType::Result,
-                msg: ThreadMessage { result_msg: res },
-            })
-            .unwrap();
-    });
-
-    let s30 = sender.clone();
-    thread::spawn(move || {
-        let func = FunctionName::Solv30;
-        let s30_copy = s30.clone();
-
-        let res = benchmark_fn(BenchmarkParams {
-            f: Box::new(solv_30),
-            on_thread_message: Box::new(move |msg| {
-                s30.send(FuncThreadMessage {
-                    func,
-                    msg_type: ThreadMessageType::Lifecycle,
-                    msg: ThreadMessage { lifecycle_msg: msg },
-                })
-                .unwrap();
-            }),
-        });
-
-        s30_copy
-            .send(FuncThreadMessage {
-                func,
-                msg_type: ThreadMessageType::Result,
-                msg: ThreadMessage { result_msg: res },
-            })
-            .unwrap();
-    });
-
-    let s50 = sender.clone();
-    thread::spawn(move || {
-        let func = FunctionName::Solv50;
-        let s50_copy = s50.clone();
-
-        let res = benchmark_fn(BenchmarkParams {
-            f: Box::new(solv_10),
-            on_thread_message: Box::new(move |msg| {
-                s50.send(FuncThreadMessage {
-                    func,
-                    msg_type: ThreadMessageType::Lifecycle,
-                    msg: ThreadMessage { lifecycle_msg: msg },
-                })
-                .unwrap();
-            }),
-        });
-
-        s50_copy
-            .send(FuncThreadMessage {
-                func,
-                msg_type: ThreadMessageType::Result,
-                msg: ThreadMessage { result_msg: res },
-            })
-            .unwrap();
-    });
-
-    let s64 = sender.clone();
-    thread::spawn(move || {
-        let func = FunctionName::Solv64;
-        let s64_copy = s64.clone();
-
-        let res = benchmark_fn(BenchmarkParams {
-            f: Box::new(solv_64),
-            on_thread_message: Box::new(move |msg| {
-                s64.send(FuncThreadMessage {
-                    func,
-                    msg_type: ThreadMessageType::Lifecycle,
-                    msg: ThreadMessage { lifecycle_msg: msg },
-                })
-                .unwrap();
-            }),
-        });
-
-        s64_copy
-            .send(FuncThreadMessage {
-                func,
-                msg_type: ThreadMessageType::Result,
-                msg: ThreadMessage { result_msg: res },
-            })
-            .unwrap();
-    });
-}
-
-fn benchmark_solvers(sender: SyncSender<FuncThreadMessage>) -> BenchmarkSolver {
-    fn on_msg(msg: ThreadLifecycleMessage) {
-        println!("Solver thread {}: {}", msg.id, msg.msg_type);
-    }
-
-    let miss_10_thread = thread::spawn(move || {
-        benchmark_fn(BenchmarkParams {
-            f: Box::new(solv_10),
-            on_thread_message: Box::new(on_msg),
-            // on_thread_message: Box::new(move |msg| {
-            //     let clone = sender.clone();
-            //
-            //     clone
-            //         .send(FuncThreadMessage {
-            //             msg,
-            //             func: FunctionName::Solv10,
-            //         })
-            //         .unwrap();
-            // }),
-        })
-    });
-    let miss_30_thread = thread::spawn(|| {
-        benchmark_fn(BenchmarkParams {
-            f: Box::new(solv_30),
-            on_thread_message: Box::new(on_msg),
-        })
-    });
-    let miss_50_thread = thread::spawn(|| {
-        benchmark_fn(BenchmarkParams {
-            f: Box::new(solv_50),
-            on_thread_message: Box::new(on_msg),
-        })
-    });
-    let miss_64_thread = thread::spawn(|| {
-        benchmark_fn(BenchmarkParams {
-            f: Box::new(solv_64),
-            on_thread_message: Box::new(on_msg),
-        })
-    });
-
-    BenchmarkSolver {
-        missing_ten: miss_10_thread.join().unwrap(),
-        missing_thirty: miss_30_thread.join().unwrap(),
-        missing_fifty: miss_50_thread.join().unwrap(),
-        missing_sixty_four: miss_64_thread.join().unwrap(),
-    }
+    let start = Instant::now();
+    grid.solve();
+    start.elapsed()
 }
 
 fn solv_10() -> Duration {
@@ -382,16 +241,39 @@ fn solv_64() -> Duration {
     benchmark_one_solver(64)
 }
 
-fn benchmark_one_solver(nb_to_remove: u8) -> Duration {
-    let mut grid = Grid::generate(None);
-    grid.remove_random_values(nb_to_remove);
-
-    let start = Instant::now();
-    grid.solve();
-    start.elapsed()
-}
-
 ////////////////////
+
+fn execute_benchmarks(sender: SyncSender<FuncThreadMessage>, functions: Vec<BenchmarkFunction>) {
+    for bench_func in functions {
+        let sender_clone = sender.clone();
+        let BenchmarkFunction { name, f } = bench_func;
+
+        thread::spawn(move || {
+            let sender_clone_again = sender_clone.clone();
+
+            let res = benchmark_fn(BenchmarkParams {
+                f: Box::new(f),
+                on_thread_message: Box::new(move |msg| {
+                    sender_clone
+                        .send(FuncThreadMessage {
+                            func: name,
+                            msg_type: ThreadMessageType::Lifecycle,
+                            msg: ThreadMessage { lifecycle_msg: msg },
+                        })
+                        .unwrap();
+                }),
+            });
+
+            sender_clone_again
+                .send(FuncThreadMessage {
+                    func: name,
+                    msg_type: ThreadMessageType::Result,
+                    msg: ThreadMessage { result_msg: res },
+                })
+                .unwrap();
+        });
+    }
+}
 
 fn benchmark_fn(args: BenchmarkParams) -> BenchmarkResult {
     let BenchmarkParams {
