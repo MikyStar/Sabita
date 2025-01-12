@@ -7,6 +7,7 @@ use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
+use colored::{ColoredString, Colorize};
 use humanize_duration::prelude::DurationExt;
 use humanize_duration::Truncate;
 
@@ -81,7 +82,7 @@ pub struct BenchmarkParams {
     on_thread_message: Box<dyn Fn(ThreadLifecycleMessage) + 'static>,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum ThreadLifecycleMsgType {
     Start,
     Stop,
@@ -246,12 +247,8 @@ fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Functi
                     } = msg.lifecycle_msg;
 
                     match lifecycle_type {
-                        ThreadLifecycleMsgType::Start => {
-                            started[func_index] += 1;
-                        }
-                        ThreadLifecycleMsgType::Stop => {
-                            stopped[func_index] += 1;
-                        }
+                        ThreadLifecycleMsgType::Start => started[func_index] += 1,
+                        ThreadLifecycleMsgType::Stop => stopped[func_index] += 1,
                     }
 
                     println!();
@@ -260,7 +257,28 @@ fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Functi
                         let nb_started = started[i];
                         let nb_stopped = stopped[i];
 
-                        println!("{f_name}: started {nb_started} ; stopped {nb_stopped}");
+                        let is_current_func = f_name == func;
+                        let is_start = lifecycle_type == ThreadLifecycleMsgType::Start;
+
+                        let f_txt = match is_current_func {
+                            true => f_name.to_string().green(),
+                            // Enables default style whilst being same type
+                            false => f_name.to_string().bold().clear(),
+                        };
+
+                        let started_txt = match is_start & is_current_func {
+                            true => nb_started.to_string().green(),
+                            // Enables default style whilst being same type
+                            false => nb_started.to_string().bold().clear(),
+                        };
+
+                        let ended_txt = match !is_start & is_current_func {
+                            true => nb_stopped.to_string().green(),
+                            // Enables default style whilst being same type
+                            false => nb_stopped.to_string().bold().clear(),
+                        };
+
+                        println!("{f_txt}: started {started_txt} ; stopped {ended_txt}");
                     }
                 }
                 ThreadMessageType::Result => {
@@ -268,6 +286,7 @@ fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Functi
 
                     results[func_index] = Some(parsed_msg);
 
+                    println!();
                     println!("==== {func} {results:?}");
                 }
             }
