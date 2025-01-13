@@ -3,11 +3,13 @@ use super::grid::Grid;
 
 use mpsc::{Receiver, SyncSender};
 use std::fmt;
+use std::io::stdout;
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use colored::{ColoredString, Colorize};
+use colored::Colorize;
+use crossterm::{cursor, execute, style::Print, terminal};
 use humanize_duration::prelude::DurationExt;
 use humanize_duration::Truncate;
 
@@ -162,6 +164,10 @@ pub fn benchmark() {
 
     let to_bench: Vec<BenchmarkFunction> = vec![
         BenchmarkFunction {
+            name: FunctionName::Generate,
+            f: Box::new(benchmark_one_generate),
+        },
+        BenchmarkFunction {
             name: FunctionName::Solv10,
             f: Box::new(solv_10),
         },
@@ -176,10 +182,6 @@ pub fn benchmark() {
         BenchmarkFunction {
             name: FunctionName::Solv64,
             f: Box::new(solv_64),
-        },
-        BenchmarkFunction {
-            name: FunctionName::Generate,
-            f: Box::new(benchmark_one_generate),
         },
     ];
 
@@ -251,7 +253,14 @@ fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Functi
                         ThreadLifecycleMsgType::Stop => stopped[func_index] += 1,
                     }
 
-                    println!();
+                    execute!(
+                        stdout(),
+                        cursor::MoveToColumn(0),
+                        cursor::MoveUp(6), // TODO dynamic
+                        terminal::Clear(terminal::ClearType::FromCursorDown), // Clear from the cursor to the bottom
+                    )
+                    .unwrap();
+
                     println!("{func} {lifecycle_type} {id}");
                     for (i, f_name) in func_names.clone().into_iter().enumerate() {
                         let nb_started = started[i];
@@ -259,26 +268,26 @@ fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Functi
 
                         let is_current_func = f_name == func;
                         let is_start = lifecycle_type == ThreadLifecycleMsgType::Start;
+                        let is_curr_func_done = nb_stopped == NB_TESTS;
 
-                        let f_txt = match is_current_func {
-                            true => f_name.to_string().green(),
-                            // Enables default style whilst being same type
-                            false => f_name.to_string().bold().clear(),
-                        };
-
-                        let started_txt = match is_start & is_current_func {
-                            true => nb_started.to_string().green(),
+                        let started_txt = match is_start & is_current_func & !is_curr_func_done {
+                            true => nb_started.to_string().cyan(),
                             // Enables default style whilst being same type
                             false => nb_started.to_string().bold().clear(),
                         };
 
-                        let ended_txt = match !is_start & is_current_func {
-                            true => nb_stopped.to_string().green(),
+                        let ended_txt = match !is_start & is_current_func & !is_curr_func_done {
+                            true => nb_stopped.to_string().cyan(),
                             // Enables default style whilst being same type
                             false => nb_stopped.to_string().bold().clear(),
                         };
 
-                        println!("{f_txt}: started {started_txt} ; stopped {ended_txt}");
+                        let final_txt =
+                            format!("{f_name}: started {started_txt} ; stopped {ended_txt}");
+                        match is_curr_func_done {
+                            true => println!("{}", final_txt.green()),
+                            false => println!("{}", final_txt),
+                        }
                     }
                 }
                 ThreadMessageType::Result => {
@@ -286,8 +295,12 @@ fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Functi
 
                     results[func_index] = Some(parsed_msg);
 
-                    println!();
-                    println!("==== {func} {results:?}");
+                    let all_done = results.iter().all(|e| e.is_some());
+
+                    if all_done {
+                        println!();
+                        println!("==== {func} {results:?}");
+                    }
                 }
             }
         }
