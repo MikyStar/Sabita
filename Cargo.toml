@@ -13,7 +13,7 @@ license = "MIT"
 rusty-hook = "^0.11.2"
 
 [dependencies]
-colored = "3.0.0"
+ascii_table = { version = "4.0.5", features = ["auto_table_width", "color_codes"] }
 crossterm = "0.28.1"
 humanize-duration = "0.0.6"
 rand = "0.8.5"

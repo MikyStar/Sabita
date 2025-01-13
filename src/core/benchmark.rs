@@ -8,8 +8,12 @@ use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use colored::Colorize;
-use crossterm::{cursor, execute, style::Print, terminal};
+use ascii_table::{Align, AsciiTable};
+use crossterm::{
+    cursor, execute,
+    style::{StyledContent, Stylize},
+    terminal,
+};
 use humanize_duration::prelude::DurationExt;
 use humanize_duration::Truncate;
 
@@ -245,7 +249,7 @@ fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Functi
                 ThreadMessageType::Lifecycle => {
                     let ThreadLifecycleMessage {
                         msg_type: lifecycle_type,
-                        id,
+                        ..
                     } = msg.lifecycle_msg;
 
                     match lifecycle_type {
@@ -253,15 +257,32 @@ fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Functi
                         ThreadLifecycleMsgType::Stop => stopped[func_index] += 1,
                     }
 
+                    let header_size = 4;
+
                     execute!(
                         stdout(),
                         cursor::MoveToColumn(0),
-                        cursor::MoveUp(6), // TODO dynamic
+                        cursor::MoveUp((func_names.len() + header_size) as u16),
                         terminal::Clear(terminal::ClearType::FromCursorDown), // Clear from the cursor to the bottom
                     )
                     .unwrap();
 
-                    println!("{func} {lifecycle_type} {id}");
+                    let mut ascii_table = AsciiTable::default();
+                    ascii_table
+                        .column(0)
+                        .set_header("Function")
+                        .set_align(Align::Center);
+                    ascii_table
+                        .column(1)
+                        .set_header("Started")
+                        .set_align(Align::Center);
+                    ascii_table
+                        .column(2)
+                        .set_header("Done")
+                        .set_align(Align::Center);
+
+                    let mut data: Vec<Vec<StyledContent<String>>> = vec![];
+
                     for (i, f_name) in func_names.clone().into_iter().enumerate() {
                         let nb_started = started[i];
                         let nb_stopped = stopped[i];
@@ -270,25 +291,29 @@ fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Functi
                         let is_start = lifecycle_type == ThreadLifecycleMsgType::Start;
                         let is_curr_func_done = nb_stopped == NB_TESTS;
 
-                        let started_txt = match is_start & is_current_func & !is_curr_func_done {
-                            true => nb_started.to_string().cyan(),
+                        let f_text = match is_curr_func_done {
+                            true => f_name.to_string().green(),
                             // Enables default style whilst being same type
-                            false => nb_started.to_string().bold().clear(),
+                            false => f_name.to_string().reset(),
+                        };
+
+                        let started_txt = match is_start & is_current_func & !is_curr_func_done {
+                            true => nb_started.to_string().yellow(),
+                            // Enables default style whilst being same type
+                            false => nb_started.to_string().reset(),
                         };
 
                         let ended_txt = match !is_start & is_current_func & !is_curr_func_done {
-                            true => nb_stopped.to_string().cyan(),
+                            true => nb_stopped.to_string().yellow(),
                             // Enables default style whilst being same type
-                            false => nb_stopped.to_string().bold().clear(),
+                            false => nb_stopped.to_string().reset(),
                         };
 
-                        let final_txt =
-                            format!("{f_name}: started {started_txt} ; stopped {ended_txt}");
-                        match is_curr_func_done {
-                            true => println!("{}", final_txt.green()),
-                            false => println!("{}", final_txt),
-                        }
+                        let row = vec![f_text, started_txt, ended_txt];
+                        data.push(row);
                     }
+
+                    ascii_table.print(data);
                 }
                 ThreadMessageType::Result => {
                     let parsed_msg: BenchmarkResult = msg.result_msg;
