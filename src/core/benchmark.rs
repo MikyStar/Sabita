@@ -235,6 +235,7 @@ fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Functi
     let mut stopped = vec![0; func_names.len()];
     let mut results: Vec<Option<BenchmarkResult>> = vec![None; func_names.len()];
 
+    let mut is_first_lifecycle = false;
     for received in receiver {
         let FuncThreadMessage {
             func,
@@ -243,6 +244,9 @@ fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Functi
         } = received;
 
         let func_index = func_names.iter().position(|&r| r == func).unwrap();
+
+        let header_size = 4;
+        let processing_rows_len = (func_names.len() + header_size) as u16;
 
         unsafe {
             match msg_type {
@@ -257,29 +261,11 @@ fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Functi
                         ThreadLifecycleMsgType::Stop => stopped[func_index] += 1,
                     }
 
-                    let header_size = 4;
-
-                    execute!(
-                        stdout(),
-                        cursor::MoveToColumn(0),
-                        cursor::MoveUp((func_names.len() + header_size) as u16),
-                        terminal::Clear(terminal::ClearType::FromCursorDown), // Clear from the cursor to the bottom
-                    )
-                    .unwrap();
-
-                    let mut ascii_table = AsciiTable::default();
-                    ascii_table
-                        .column(0)
-                        .set_header("Function")
-                        .set_align(Align::Center);
-                    ascii_table
-                        .column(1)
-                        .set_header("Started")
-                        .set_align(Align::Center);
-                    ascii_table
-                        .column(2)
-                        .set_header("Done")
-                        .set_align(Align::Center);
+                    if !is_first_lifecycle {
+                        is_first_lifecycle = true;
+                    } else {
+                        clean_last_rows(processing_rows_len);
+                    }
 
                     let mut data: Vec<Vec<StyledContent<String>>> = vec![];
 
@@ -309,11 +295,17 @@ fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Functi
                             false => nb_stopped.to_string().reset(),
                         };
 
-                        let row = vec![f_text, started_txt, ended_txt];
-                        data.push(row);
+                        data.push(vec![f_text, started_txt, ended_txt]);
                     }
 
-                    ascii_table.print(data);
+                    print_table(
+                        vec![
+                            "Function".to_string(),
+                            "Started".to_string(),
+                            "Done".to_string(),
+                        ],
+                        data,
+                    );
                 }
                 ThreadMessageType::Result => {
                     let parsed_msg: BenchmarkResult = msg.result_msg;
@@ -323,7 +315,7 @@ fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Functi
                     let all_done = results.iter().all(|e| e.is_some());
 
                     if all_done {
-                        println!();
+                        clean_last_rows(processing_rows_len);
                         println!("==== {func} {results:?}");
                     }
                 }
@@ -466,4 +458,29 @@ fn benchmark_fn(args: BenchmarkParams) -> BenchmarkResult {
         slowest,
         average,
     }
+}
+
+////////////////////
+
+fn clean_last_rows(count: u16) {
+    execute!(
+        stdout(),
+        cursor::MoveToColumn(0),
+        cursor::MoveUp(count),
+        terminal::Clear(terminal::ClearType::FromCursorDown),
+    )
+    .unwrap();
+}
+
+fn print_table(titles: Vec<String>, data: Vec<Vec<StyledContent<String>>>) {
+    let mut ascii_table = AsciiTable::default();
+
+    for (i, title) in titles.into_iter().enumerate() {
+        ascii_table
+            .column(i)
+            .set_header(title)
+            .set_align(Align::Center);
+    }
+
+    ascii_table.print(data);
 }
