@@ -236,6 +236,7 @@ fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Functi
     let mut results: Vec<Option<BenchmarkResult>> = vec![None; func_names.len()];
 
     let mut is_first_lifecycle = false;
+
     for received in receiver {
         let FuncThreadMessage {
             func,
@@ -316,7 +317,38 @@ fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Functi
 
                     if all_done {
                         clean_last_rows(processing_rows_len);
-                        println!("==== {func} {results:?}");
+
+                        let mut data: Vec<Vec<StyledContent<String>>> = vec![];
+
+                        for (i, result) in results.clone().into_iter().enumerate() {
+                            match result {
+                                Some(val) => {
+                                    let BenchmarkResult {
+                                        slowest,
+                                        average,
+                                        fastest,
+                                    } = val;
+
+                                    data.push(vec![
+                                        func_names[i].to_string().reset(),
+                                        average.human(Truncate::Nano).to_string().reset(),
+                                        slowest.human(Truncate::Nano).to_string().reset(),
+                                        fastest.human(Truncate::Nano).to_string().reset(),
+                                    ]);
+                                }
+                                None => panic!("Results not found"),
+                            }
+                        }
+
+                        print_table(
+                            vec![
+                                "Function".to_string(),
+                                "Average".to_string(),
+                                "Slowest".to_string(),
+                                "Fastest".to_string(), // TODO standard deviation
+                            ],
+                            data,
+                        );
                     }
                 }
             }
