@@ -1,14 +1,14 @@
-use crate::assets::full_grid::ConstGridValues;
-use crate::utils::grid_utils::grid_values_array_to_vec;
+use crate::{assets::full_grid::ConstGridValues, utils::grid_utils::grid_values_array_to_vec};
 
-use super::constants::{LENGTH_DIMENSION, MAX_NB_VALUES, MINIMUM_PROVIDED};
-use super::file::{read, write};
-use super::generator::{generate, remove_random_values};
-use super::solver::{locate_missing_box, solve};
-use super::validation::validate;
+use super::{
+    constants::{LENGTH_DIMENSION, MAX_NB_VALUES, MINIMUM_PROVIDED},
+    file::{read, write},
+    generator::{generate, remove_random_values},
+    solver::{locate_missing_box, solve},
+    validation::validate,
+};
 
-use std::error::Error;
-use std::fmt;
+use std::{error::Error, fmt};
 
 ////////////////////////////////////////
 

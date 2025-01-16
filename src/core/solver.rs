@@ -1,6 +1,8 @@
-use super::constants::{LENGTH_DIMENSION, TO_BE_SOLVED};
-use super::grid::{location_to_region, BoxLocation, GridValues};
-use super::validation::validate_new_box;
+use super::{
+    constants::{LENGTH_DIMENSION, TO_BE_SOLVED},
+    grid::{location_to_region, BoxLocation, GridValues},
+    validation::validate_new_box,
+};
 
 use std::fmt;
 
