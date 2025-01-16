@@ -6,9 +6,7 @@ use super::{
     },
 };
 
-use std::sync::{mpsc, Arc, Mutex};
-
-use mpsc::{Receiver, SyncSender};
+use std::sync::mpsc::Receiver;
 
 ////////////////////////////////////////
 

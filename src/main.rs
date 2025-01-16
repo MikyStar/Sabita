@@ -1,7 +1,9 @@
-use sabita::core::bench::benchmark;
-use sabita::core::cli::{parse_args, ArgParsed, ACTION};
-use sabita::core::constants::{PKG_NAME, PKG_VERSION};
-use sabita::core::grid::Grid;
+use sabita::core::{
+    bench::benchmark,
+    cli::{parse_args, ArgParsed, ACTION},
+    constants::{PKG_NAME, PKG_VERSION},
+    grid::Grid,
+};
 
 use std::process::exit;
 

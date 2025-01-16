@@ -4,24 +4,17 @@ use super::benchmark::{
         execute_benchmarks, BenchmarkFunction, BenchmarkResult, FuncThreadMessage, FunctionName,
     },
 };
-use super::constants::{PKG_NAME, PKG_VERSION};
-use super::grid::Grid;
 
-use mpsc::{Receiver, SyncSender};
-use std::fmt;
-use std::io::stdout;
-use std::sync::{mpsc, Arc, Mutex};
-use std::thread;
-use std::time::{Duration, Instant};
-
-use ascii_table::{Align, AsciiTable};
-use crossterm::{
-    cursor, execute,
-    style::{StyledContent, Stylize},
-    terminal,
+use super::{
+    constants::{PKG_NAME, PKG_VERSION},
+    grid::Grid,
 };
-use humanize_duration::prelude::DurationExt;
-use humanize_duration::Truncate;
+
+use std::{
+    fmt,
+    sync::mpsc::sync_channel,
+    time::{Duration, Instant},
+};
 
 ////////////////////////////////////////
 
@@ -74,7 +67,7 @@ pub fn benchmark() {
     println!("----------------------------------------\n");
     println!("Benchmarking {PKG_NAME}@v{PKG_VERSION} with {NB_TESTS} iterations\n");
 
-    let (tx, rx) = mpsc::sync_channel::<FuncThreadMessage>(1);
+    let (tx, rx) = sync_channel::<FuncThreadMessage>(1);
 
     let to_bench: Vec<BenchmarkFunction> = vec![
         BenchmarkFunction {

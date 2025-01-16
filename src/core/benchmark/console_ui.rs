@@ -2,10 +2,10 @@ use super::runner::FunctionName;
 
 use std::{io::stdout, time::Duration};
 
-use humanize_duration::prelude::DurationExt;
-use humanize_duration::Truncate;
+use humanize_duration::{prelude::DurationExt, Truncate};
 
 use ascii_table::{Align, AsciiTable};
+
 use crossterm::{
     cursor, execute,
     style::{StyledContent, Stylize},

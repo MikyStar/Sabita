@@ -1,12 +1,14 @@
-use std::fmt;
-use std::sync::{mpsc, Arc, Mutex};
-use std::thread;
-use std::time::{Duration, Instant};
+use std::{
+    fmt,
+    sync::{
+        mpsc::{channel, SyncSender},
+        Arc, Mutex,
+    },
+    thread,
+    time::Duration,
+};
 
-use mpsc::{Receiver, SyncSender};
-
-use humanize_duration::prelude::DurationExt;
-use humanize_duration::Truncate;
+use humanize_duration::{prelude::DurationExt, Truncate};
 
 ////////////////////
 
@@ -116,7 +118,7 @@ pub fn benchmark_fn(args: BenchmarkParams) -> BenchmarkResult {
     } = args;
 
     // TODO reuse the same channel that main function
-    let (tx, rx) = mpsc::channel();
+    let (tx, rx) = channel();
 
     let func = Arc::new(f);
 
