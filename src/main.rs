@@ -1,4 +1,4 @@
-use sabita::core::benchmark::benchmark;
+use sabita::core::bench::benchmark;
 use sabita::core::cli::{parse_args, ArgParsed, ACTION};
 use sabita::core::constants::{PKG_NAME, PKG_VERSION};
 use sabita::core::grid::Grid;
