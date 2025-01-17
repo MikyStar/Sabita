@@ -1,8 +1,6 @@
-use super::runner::FunctionName;
+use super::{runner::FunctionName, time_utils::nano_to_hr};
 
 use std::{io::stdout, time::Duration};
-
-use humanize_duration::{prelude::DurationExt, Truncate};
 
 use ascii_table::{Align, AsciiTable};
 
@@ -65,7 +63,7 @@ pub fn color_txt(param: ToColorize, color: TextColor) -> ColoredText {
         ToColorize::Int(i) => i.to_string(),
         ToColorize::U8(u) => u.to_string(),
         ToColorize::FuncName(f) => f.to_string(),
-        ToColorize::Dur(d) => d.human(Truncate::Nano).to_string(),
+        ToColorize::Dur(d) => nano_to_hr(d),
     };
 
     match color {

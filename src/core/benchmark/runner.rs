@@ -5,10 +5,10 @@ use std::{
         Arc, Mutex,
     },
     thread,
-    time::Duration,
+    time::{Duration, Instant},
 };
 
-use humanize_duration::{prelude::DurationExt, Truncate};
+use crate::core::benchmark::time_utils::nano_to_hr;
 
 ////////////////////
 
@@ -25,9 +25,9 @@ pub struct BenchmarkResult {
 
 impl fmt::Display for BenchmarkResult {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let avg = &self.average.human(Truncate::Nano);
-        let fast = &self.fastest.human(Truncate::Nano);
-        let slow = &self.slowest.human(Truncate::Nano);
+        let avg = nano_to_hr(self.average);
+        let fast = nano_to_hr(self.fastest);
+        let slow = nano_to_hr(self.slowest);
 
         write!(f, "Average: {avg}\nFastest: {fast}\nSlowest: {slow}")
     }
