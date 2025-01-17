@@ -1,3 +1,5 @@
+use crate::core::benchmark::time_utils::seconds_to_hr;
+
 use super::{
     console_ui::{clean_last_rows, color_txt, print_table, ColoredText, TextColor, ToColorize},
     runner::{
@@ -6,7 +8,7 @@ use super::{
     },
 };
 
-use std::{sync::mpsc::Receiver, usize};
+use std::{sync::mpsc::Receiver, time::Instant, usize};
 
 ////////////////////////////////////////
 
@@ -20,6 +22,8 @@ pub fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Fu
     let mut results: Vec<Option<BenchmarkResult>> = vec![None; func_names.len()];
 
     let mut is_first_lifecycle = false;
+    let mut has_time_printing_started = false;
+
     let processing_rows_len = (func_names.len() + HEADER_SIZE) as u16;
 
     for received in receiver {
@@ -29,17 +33,23 @@ pub fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Fu
             msg,
         } = received;
 
-        let func_index = func_names.iter().position(|&r| r == func).unwrap();
-
         unsafe {
             match msg_type {
                 ThreadMessageType::Lifecycle => {
                     let parsed_msg: ThreadLifecycleMessage = msg.lifecycle_msg;
 
+                    let func_index = func_names.iter().position(|&r| r == func).unwrap();
+
                     if !is_first_lifecycle {
                         is_first_lifecycle = true;
                     } else {
-                        clean_last_rows(processing_rows_len);
+                        let to_remove = processing_rows_len + 2;
+
+                        if has_time_printing_started {
+                            clean_last_rows(to_remove);
+                        } else {
+                            clean_last_rows(to_remove + 1);
+                        }
                     }
 
                     on_lifecycle(
@@ -53,6 +63,9 @@ pub fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Fu
                 }
                 ThreadMessageType::Result => {
                     let parsed_msg: BenchmarkResult = msg.result_msg;
+
+                    let func_index = func_names.iter().position(|&r| r == func).unwrap();
+
                     on_result(
                         parsed_msg,
                         &mut results,
@@ -60,6 +73,25 @@ pub fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Fu
                         func_index,
                         processing_rows_len,
                     );
+
+                    println!();
+                }
+                ThreadMessageType::Tick => {
+                    let parsed_msg: Instant = msg.tick_msg;
+
+                    let time = parsed_msg.elapsed();
+                    let formatted = seconds_to_hr(time);
+
+                    clean_last_rows(0);
+
+                    println!(
+                        "Running ... {}",
+                        color_txt(ToColorize::Str(formatted), TextColor::Yellow)
+                    );
+
+                    if !has_time_printing_started {
+                        has_time_printing_started = true;
+                    }
                 }
             }
         }
@@ -122,6 +154,8 @@ fn on_lifecycle(
         ],
         data,
     );
+
+    println!();
 }
 
 ////////////////////
@@ -158,7 +192,7 @@ fn on_result(
                         color_txt(ToColorize::Dur(fastest), TextColor::Normal),
                     ]);
                 }
-                None => println!("Results not found"),
+                None => panic!("Results not found"),
             }
         }
 

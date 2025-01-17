@@ -48,6 +48,7 @@ pub enum ThreadLifecycleMsgType {
 pub enum ThreadMessageType {
     Lifecycle,
     Result,
+    Tick,
 }
 
 #[derive(Copy, Clone)]
@@ -61,6 +62,7 @@ pub struct FuncThreadMessage {
 pub union ThreadMessage {
     pub lifecycle_msg: ThreadLifecycleMessage,
     pub result_msg: BenchmarkResult,
+    pub tick_msg: Instant, // TODO remove
 }
 
 impl fmt::Display for ThreadLifecycleMsgType {
@@ -82,6 +84,8 @@ pub struct ThreadLifecycleMessage {
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum FunctionName {
+    Clock,
+
     Generate,
     Solv10,
     Solv30,
@@ -92,6 +96,7 @@ pub enum FunctionName {
 impl fmt::Display for FunctionName {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let txt = match self {
+            FunctionName::Clock => "clock",
             FunctionName::Generate => "generate",
             FunctionName::Solv10 => "solv10",
             FunctionName::Solv30 => "solv30",
@@ -250,4 +255,28 @@ pub fn execute_benchmarks(
                 .unwrap();
         });
     }
+
+    start_clock(sender);
+}
+
+fn start_clock(sender: SyncSender<FuncThreadMessage>) {
+    let start = Instant::now();
+
+    thread::spawn(move || loop {
+        let sec = Duration::from_secs(1);
+        thread::sleep(sec);
+
+        let time = start.elapsed();
+        let wait_a_bit = Duration::from_secs(5);
+
+        if time > wait_a_bit {
+            sender
+                .send(FuncThreadMessage {
+                    func: FunctionName::Clock,
+                    msg_type: ThreadMessageType::Tick,
+                    msg: ThreadMessage { tick_msg: start },
+                })
+                .unwrap();
+        }
+    });
 }
