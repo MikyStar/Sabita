@@ -1,7 +1,10 @@
-use crate::core::benchmark::time_utils::seconds_to_hr;
+use crate::core::benchmark::{console_ui::queue_msg, time_utils::seconds_to_hr};
 
 use super::{
-    console_ui::{clean_last_rows, color_txt, print_table, ColoredText, TextColor, ToColorize},
+    console_ui::{
+        clear_lines_from, color_txt, get_cursor_position, print_table, ColoredText, CursorPos,
+        TextColor, ToColorize,
+    },
     runner::{
         BenchmarkResult, FuncThreadMessage, FunctionName, ThreadLifecycleMessage,
         ThreadLifecycleMsgType, ThreadMessageType, NB_TESTS,
@@ -9,10 +12,6 @@ use super::{
 };
 
 use std::{sync::mpsc::Receiver, time::Instant, usize};
-
-////////////////////////////////////////
-
-const HEADER_SIZE: usize = 4;
 
 ////////////////////////////////////////
 
@@ -24,7 +23,8 @@ pub fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Fu
     let mut is_first_lifecycle = false;
     let mut has_time_printing_started = false;
 
-    let processing_rows_len = (func_names.len() + HEADER_SIZE) as u16;
+    let base_cursor_pos = get_cursor_position();
+    let mut after_table_cursor_pos: Option<CursorPos> = None;
 
     for received in receiver {
         let FuncThreadMessage {
@@ -43,13 +43,7 @@ pub fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Fu
                     if !is_first_lifecycle {
                         is_first_lifecycle = true;
                     } else {
-                        let to_remove = processing_rows_len + 2;
-
-                        if has_time_printing_started {
-                            clean_last_rows(to_remove);
-                        } else {
-                            clean_last_rows(to_remove + 1);
-                        }
+                        clear_lines_from(base_cursor_pos);
                     }
 
                     on_lifecycle(
@@ -60,6 +54,10 @@ pub fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Fu
                         &func_names,
                         func_index,
                     );
+
+                    if after_table_cursor_pos.is_none() {
+                        after_table_cursor_pos = Some(get_cursor_position());
+                    }
                 }
                 ThreadMessageType::Result => {
                     let parsed_msg: BenchmarkResult = msg.result_msg;
@@ -71,7 +69,7 @@ pub fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Fu
                         &mut results,
                         &func_names,
                         func_index,
-                        processing_rows_len,
+                        base_cursor_pos,
                     );
 
                     println!();
@@ -82,12 +80,14 @@ pub fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Fu
                     let time = parsed_msg.elapsed();
                     let formatted = seconds_to_hr(time);
 
-                    clean_last_rows(0);
+                    if after_table_cursor_pos.is_some() {
+                        clear_lines_from(after_table_cursor_pos.unwrap());
+                    }
 
-                    println!(
+                    queue_msg(format!(
                         "Running ... {}",
                         color_txt(ToColorize::Str(formatted), TextColor::Yellow)
-                    );
+                    ));
 
                     if !has_time_printing_started {
                         has_time_printing_started = true;
@@ -154,8 +154,6 @@ fn on_lifecycle(
         ],
         data,
     );
-
-    println!();
 }
 
 ////////////////////
@@ -165,14 +163,14 @@ fn on_result(
     results: &mut Vec<Option<BenchmarkResult>>,
     func_names: &Vec<FunctionName>,
     func_index: usize,
-    rows_to_clean: u16,
+    base_cursor_pos: CursorPos,
 ) {
     results[func_index] = Some(message);
 
     let all_done = results.iter().all(|e| e.is_some());
 
     if all_done {
-        clean_last_rows(rows_to_clean);
+        clear_lines_from(base_cursor_pos);
 
         let mut data: Vec<Vec<ColoredText>> = vec![];
 

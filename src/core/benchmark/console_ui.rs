@@ -6,13 +6,14 @@ use ascii_table::{Align, AsciiTable};
 
 use crossterm::{
     cursor, execute,
-    style::{StyledContent, Stylize},
+    style::{Print, StyledContent, Stylize},
     terminal,
 };
 
 ////////////////////
 
 pub type ColoredText = StyledContent<String>;
+pub type CursorPos = (u16, u16);
 
 ////////////////////
 
@@ -32,12 +33,18 @@ pub enum TextColor {
 
 ////////////////////
 
-pub fn clean_last_rows(count: u16) {
+pub fn get_cursor_position() -> CursorPos {
+    cursor::position().unwrap()
+}
+
+pub fn clear_lines_from(pos: CursorPos) {
+    let final_row = cursor::position().unwrap().1;
+    let lines_printed = final_row.saturating_sub(pos.1);
+
     execute!(
         stdout(),
-        cursor::MoveToColumn(0),
-        cursor::MoveUp(count),
-        terminal::Clear(terminal::ClearType::FromCursorDown),
+        cursor::MoveUp(lines_printed),
+        terminal::Clear(terminal::ClearType::FromCursorDown)
     )
     .unwrap();
 }
@@ -52,7 +59,23 @@ pub fn print_table(titles: Vec<String>, data: Vec<Vec<ColoredText>>) {
             .set_align(Align::Center);
     }
 
-    ascii_table.print(data);
+    execute!(
+        stdout(),
+        Print(ascii_table.format(data)),
+        Print("\n"),
+        cursor::MoveToColumn(0),
+    )
+    .unwrap();
+}
+
+pub fn queue_msg(txt: String) {
+    execute!(
+        stdout(),
+        Print(txt),
+        cursor::MoveToColumn(0),
+        cursor::MoveDown(1),
+    )
+    .unwrap();
 }
 
 ////////////////////
