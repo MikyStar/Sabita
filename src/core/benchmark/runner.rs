@@ -8,8 +8,6 @@ use std::{
     time::Duration,
 };
 
-use crate::core::benchmark::time_utils::nano_to_hr;
-
 ////////////////////
 
 pub const NB_TESTS: u8 = 50;
@@ -21,16 +19,7 @@ pub struct BenchmarkResult {
     pub fastest: Duration,
     pub slowest: Duration,
     pub average: Duration,
-}
-
-impl fmt::Display for BenchmarkResult {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let avg = nano_to_hr(self.average);
-        let fast = nano_to_hr(self.fastest);
-        let slow = nano_to_hr(self.slowest);
-
-        write!(f, "Average: {avg}\nFastest: {fast}\nSlowest: {slow}")
-    }
+    pub std_dev: Duration,
 }
 
 pub struct BenchmarkParams {
@@ -131,6 +120,8 @@ pub fn benchmark_fn(args: BenchmarkParams) -> BenchmarkResult {
     let slower = Arc::new(Mutex::new(None));
     let full_time = Arc::new(Mutex::new(None));
 
+    let times: Arc<Mutex<Vec<Duration>>> = Arc::new(Mutex::new(vec![]));
+
     let mut thread_handles = vec![];
 
     for i in 0..NB_TESTS {
@@ -141,6 +132,8 @@ pub fn benchmark_fn(args: BenchmarkParams) -> BenchmarkResult {
         let slower_clone = Arc::clone(&slower);
         let full_time_clone = Arc::clone(&full_time);
 
+        let times_clone = Arc::clone(&times);
+
         let handle = thread::spawn(move || {
             tx_clone
                 .send(ThreadLifecycleMessage {
@@ -150,42 +143,36 @@ pub fn benchmark_fn(args: BenchmarkParams) -> BenchmarkResult {
                 .unwrap();
 
             let res = func_clone();
-            // let res = Duration::new(5, 0);
-            // thread::sleep(res);
 
-            {
-                let mut fast = faster_clone.lock().unwrap();
-                match *fast {
-                    None => *fast = Some(res),
-                    Some(val) => {
-                        if val > res {
-                            *fast = Some(res);
-                        }
+            let mut fast = faster_clone.lock().unwrap();
+            match *fast {
+                None => *fast = Some(res),
+                Some(val) => {
+                    if val > res {
+                        *fast = Some(res);
                     }
                 }
             }
 
-            {
-                let mut slow = slower_clone.lock().unwrap();
-                match *slow {
-                    None => *slow = Some(res),
-                    Some(val) => {
-                        if val < res {
-                            *slow = Some(res);
-                        }
+            let mut slow = slower_clone.lock().unwrap();
+            match *slow {
+                None => *slow = Some(res),
+                Some(val) => {
+                    if val < res {
+                        *slow = Some(res);
                     }
                 }
             }
 
-            {
-                let mut full = full_time_clone.lock().unwrap();
-                match *full {
-                    None => *full = Some(res),
-                    Some(val) => {
-                        *full = Some(val + res);
-                    }
+            let mut full = full_time_clone.lock().unwrap();
+            match *full {
+                None => *full = Some(res),
+                Some(val) => {
+                    *full = Some(val + res);
                 }
             }
+
+            times_clone.lock().unwrap().push(res);
 
             tx_clone
                 .send(ThreadLifecycleMessage {
@@ -214,10 +201,29 @@ pub fn benchmark_fn(args: BenchmarkParams) -> BenchmarkResult {
         .unwrap()
         .div_f32(NB_TESTS as f32);
 
+    let std_dev = {
+        let vals = times.lock().unwrap();
+        let durations_ms: Vec<u128> = vals.iter().map(|d| d.as_nanos()).collect();
+
+        let variance = durations_ms
+            .iter()
+            .map(|&ms| {
+                let diff = ms as f64 - (average.as_nanos() as f64);
+                diff * diff
+            })
+            .sum::<f64>()
+            / durations_ms.len() as f64;
+
+        let std_dev_ns = variance.sqrt();
+
+        Duration::from_nanos(std_dev_ns as u64)
+    };
+
     BenchmarkResult {
         fastest,
         slowest,
         average,
+        std_dev,
     }
 }
 ////////////////////

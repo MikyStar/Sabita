@@ -169,6 +169,7 @@ fn print_results(
                     slowest,
                     average,
                     fastest,
+                    std_dev,
                 } = val;
 
                 data.push(vec![
@@ -176,6 +177,7 @@ fn print_results(
                     color_txt(ToColorize::Dur(average), TextColor::Normal),
                     color_txt(ToColorize::Dur(slowest), TextColor::Normal),
                     color_txt(ToColorize::Dur(fastest), TextColor::Normal),
+                    color_txt(ToColorize::Dur(std_dev), TextColor::Normal),
                 ]);
             }
             None => panic!("Results not found"),
@@ -187,7 +189,8 @@ fn print_results(
             "Function".to_string(),
             "Average".to_string(),
             "Slowest".to_string(),
-            "Fastest".to_string(), // TODO standard deviation
+            "Fastest".to_string(),
+            "Std dev".to_string(),
         ],
         data,
     );
