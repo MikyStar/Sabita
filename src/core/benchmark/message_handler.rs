@@ -12,6 +12,7 @@ use super::{
 };
 
 use std::{
+    process::exit,
     sync::mpsc::Receiver,
     time::{Duration, Instant},
     usize,
@@ -66,26 +67,26 @@ pub fn handle_messages(
                         after_table_cursor_pos = Some(get_cursor_position());
                     }
 
-                    on_tick(start, after_table_cursor_pos.unwrap());
+                    handle_clock(start, after_table_cursor_pos.unwrap());
                 }
                 ThreadMessageType::Result => {
                     let parsed_msg: BenchmarkResult = msg.result_msg;
 
                     let func_index = func_names.iter().position(|&r| r == func).unwrap();
 
-                    on_result(
-                        parsed_msg,
-                        &mut results,
-                        &func_names,
-                        func_index,
-                        base_cursor_pos,
-                    );
+                    results[func_index] = Some(parsed_msg);
 
-                    println!();
+                    let all_done = results.iter().all(|e| e.is_some());
+
+                    if all_done {
+                        print_results(&mut results, &func_names, base_cursor_pos);
+
+                        exit(0);
+                    }
                 }
                 ThreadMessageType::Tick => {
                     if after_table_cursor_pos.is_some() {
-                        on_tick(start, after_table_cursor_pos.unwrap());
+                        handle_clock(start, after_table_cursor_pos.unwrap());
                     }
                 }
             }
@@ -153,57 +154,49 @@ fn on_lifecycle(
 
 ////////////////////
 
-fn on_result(
-    message: BenchmarkResult,
+fn print_results(
     results: &mut Vec<Option<BenchmarkResult>>,
     func_names: &Vec<FunctionName>,
-    func_index: usize,
     base_cursor_pos: CursorPos,
 ) {
-    results[func_index] = Some(message);
+    clear_lines_from(base_cursor_pos);
 
-    let all_done = results.iter().all(|e| e.is_some());
+    let mut data: Vec<Vec<ColoredText>> = vec![];
 
-    if all_done {
-        clear_lines_from(base_cursor_pos);
+    for (i, result) in results.clone().into_iter().enumerate() {
+        match result {
+            Some(val) => {
+                let BenchmarkResult {
+                    slowest,
+                    average,
+                    fastest,
+                } = val;
 
-        let mut data: Vec<Vec<ColoredText>> = vec![];
-
-        for (i, result) in results.clone().into_iter().enumerate() {
-            match result {
-                Some(val) => {
-                    let BenchmarkResult {
-                        slowest,
-                        average,
-                        fastest,
-                    } = val;
-
-                    data.push(vec![
-                        color_txt(ToColorize::FuncName(func_names[i]), TextColor::Normal),
-                        color_txt(ToColorize::Dur(average), TextColor::Normal),
-                        color_txt(ToColorize::Dur(slowest), TextColor::Normal),
-                        color_txt(ToColorize::Dur(fastest), TextColor::Normal),
-                    ]);
-                }
-                None => panic!("Results not found"),
+                data.push(vec![
+                    color_txt(ToColorize::FuncName(func_names[i]), TextColor::Normal),
+                    color_txt(ToColorize::Dur(average), TextColor::Normal),
+                    color_txt(ToColorize::Dur(slowest), TextColor::Normal),
+                    color_txt(ToColorize::Dur(fastest), TextColor::Normal),
+                ]);
             }
+            None => panic!("Results not found"),
         }
-
-        print_table(
-            vec![
-                "Function".to_string(),
-                "Average".to_string(),
-                "Slowest".to_string(),
-                "Fastest".to_string(), // TODO standard deviation
-            ],
-            data,
-        );
     }
+
+    print_table(
+        vec![
+            "Function".to_string(),
+            "Average".to_string(),
+            "Slowest".to_string(),
+            "Fastest".to_string(), // TODO standard deviation
+        ],
+        data,
+    );
 }
 
 ////////////////////
 
-fn on_tick(start: Instant, after_table_cursor_pos: CursorPos) {
+fn handle_clock(start: Instant, after_table_cursor_pos: CursorPos) {
     let time = start.elapsed();
     let wait_a_bit = Duration::from_secs(5);
 
