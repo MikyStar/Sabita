@@ -11,17 +11,24 @@ use super::{
     },
 };
 
-use std::{sync::mpsc::Receiver, time::Instant, usize};
+use std::{
+    sync::mpsc::Receiver,
+    time::{Duration, Instant},
+    usize,
+};
 
 ////////////////////////////////////////
 
-pub fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<FunctionName>) {
+pub fn handle_messages(
+    receiver: Receiver<FuncThreadMessage>,
+    func_names: Vec<FunctionName>,
+    start: Instant,
+) {
     let mut started: Vec<u8> = vec![0; func_names.len()];
     let mut stopped: Vec<u8> = vec![0; func_names.len()];
     let mut results: Vec<Option<BenchmarkResult>> = vec![None; func_names.len()];
 
     let mut is_first_lifecycle = false;
-    let mut has_time_printing_started = false;
 
     let base_cursor_pos = get_cursor_position();
     let mut after_table_cursor_pos: Option<CursorPos> = None;
@@ -58,6 +65,8 @@ pub fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Fu
                     if after_table_cursor_pos.is_none() {
                         after_table_cursor_pos = Some(get_cursor_position());
                     }
+
+                    on_tick(start, after_table_cursor_pos.unwrap());
                 }
                 ThreadMessageType::Result => {
                     let parsed_msg: BenchmarkResult = msg.result_msg;
@@ -75,22 +84,8 @@ pub fn handle_messages(receiver: Receiver<FuncThreadMessage>, func_names: Vec<Fu
                     println!();
                 }
                 ThreadMessageType::Tick => {
-                    let parsed_msg: Instant = msg.tick_msg;
-
-                    let time = parsed_msg.elapsed();
-                    let formatted = seconds_to_hr(time);
-
                     if after_table_cursor_pos.is_some() {
-                        clear_lines_from(after_table_cursor_pos.unwrap());
-                    }
-
-                    queue_msg(format!(
-                        "Running ... {}",
-                        color_txt(ToColorize::Str(formatted), TextColor::Yellow)
-                    ));
-
-                    if !has_time_printing_started {
-                        has_time_printing_started = true;
+                        on_tick(start, after_table_cursor_pos.unwrap());
                     }
                 }
             }
@@ -203,5 +198,23 @@ fn on_result(
             ],
             data,
         );
+    }
+}
+
+////////////////////
+
+fn on_tick(start: Instant, after_table_cursor_pos: CursorPos) {
+    let time = start.elapsed();
+    let wait_a_bit = Duration::from_secs(5);
+
+    if time > wait_a_bit {
+        clear_lines_from(after_table_cursor_pos);
+
+        let formatted = seconds_to_hr(time);
+
+        queue_msg(format!(
+            "Running ... {}",
+            color_txt(ToColorize::Str(formatted), TextColor::Yellow)
+        ));
     }
 }

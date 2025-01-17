@@ -5,7 +5,7 @@ use std::{
         Arc, Mutex,
     },
     thread,
-    time::{Duration, Instant},
+    time::Duration,
 };
 
 use crate::core::benchmark::time_utils::nano_to_hr;
@@ -62,7 +62,7 @@ pub struct FuncThreadMessage {
 pub union ThreadMessage {
     pub lifecycle_msg: ThreadLifecycleMessage,
     pub result_msg: BenchmarkResult,
-    pub tick_msg: Instant, // TODO remove
+    pub tick_msg: (), // TODO remove
 }
 
 impl fmt::Display for ThreadLifecycleMsgType {
@@ -260,23 +260,16 @@ pub fn execute_benchmarks(
 }
 
 fn start_clock(sender: SyncSender<FuncThreadMessage>) {
-    let start = Instant::now();
-
     thread::spawn(move || loop {
         let sec = Duration::from_secs(1);
         thread::sleep(sec);
 
-        let time = start.elapsed();
-        let wait_a_bit = Duration::from_secs(5);
-
-        if time > wait_a_bit {
-            sender
-                .send(FuncThreadMessage {
-                    func: FunctionName::Clock,
-                    msg_type: ThreadMessageType::Tick,
-                    msg: ThreadMessage { tick_msg: start },
-                })
-                .unwrap();
-        }
+        sender
+            .send(FuncThreadMessage {
+                func: FunctionName::Clock,
+                msg_type: ThreadMessageType::Tick,
+                msg: ThreadMessage { tick_msg: () },
+            })
+            .unwrap();
     });
 }

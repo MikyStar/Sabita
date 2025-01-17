@@ -64,6 +64,8 @@ impl fmt::Display for BenchmarkSolver {
 ////////////////////////////////////////
 
 pub fn benchmark() {
+    let start = Instant::now();
+
     println!("----------------------------------------\n");
     println!("Benchmarking {PKG_NAME}@v{PKG_VERSION} with {NB_TESTS} iterations\n");
 
@@ -95,7 +97,7 @@ pub fn benchmark() {
     let f_names = to_bench.iter().map(|f| f.name).collect();
 
     execute_benchmarks(tx, to_bench);
-    handle_messages(rx, f_names);
+    handle_messages(rx, f_names, start);
 }
 
 ////////////////////
