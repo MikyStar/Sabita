@@ -1,17 +1,17 @@
-use crate::core::benchmark::{console_ui::queue_msg, time_utils::seconds_to_hr};
-
 use super::{
     console_ui::{
-        clear_lines_from, color_txt, get_cursor_position, print_table, ColoredText, CursorPos,
-        TextColor, ToColorize,
+        clear_lines_from, color_txt, draw_histogram, get_cursor_position, print_table, queue_msg,
+        ColoredText, CursorPos, TextColor, ToColorize,
     },
     runner::{
         BenchmarkResult, FuncThreadMessage, FunctionName, ThreadLifecycleMessage,
         ThreadLifecycleMsgType, ThreadMessageType, NB_TESTS,
     },
+    time_utils::seconds_to_hr,
 };
 
 use std::{
+    mem::ManuallyDrop,
     process::exit,
     sync::mpsc::Receiver,
     time::{Duration, Instant},
@@ -43,7 +43,8 @@ pub fn handle_messages(
         unsafe {
             match msg_type {
                 ThreadMessageType::Lifecycle => {
-                    let parsed_msg: ThreadLifecycleMessage = msg.lifecycle_msg;
+                    let mut _parsed_msg: ManuallyDrop<ThreadLifecycleMessage> = msg.lifecycle_msg;
+                    let parsed_msg = ManuallyDrop::take(&mut _parsed_msg);
 
                     let func_index = func_names.iter().position(|&r| r == func).unwrap();
 
@@ -53,7 +54,7 @@ pub fn handle_messages(
                         clear_lines_from(base_cursor_pos);
                     }
 
-                    on_lifecycle(
+                    handle_progress(
                         parsed_msg,
                         func,
                         &mut started,
@@ -69,7 +70,8 @@ pub fn handle_messages(
                     handle_clock(start, after_table_cursor_pos.unwrap());
                 }
                 ThreadMessageType::Result => {
-                    let parsed_msg: BenchmarkResult = msg.result_msg;
+                    let mut _parsed_msg: ManuallyDrop<BenchmarkResult> = msg.result_msg;
+                    let parsed_msg = ManuallyDrop::take(&mut _parsed_msg);
 
                     let func_index = func_names.iter().position(|&r| r == func).unwrap();
 
@@ -78,7 +80,9 @@ pub fn handle_messages(
                     let all_done = results.iter().all(|e| e.is_some());
 
                     if all_done {
-                        print_results(&mut results, &func_names, base_cursor_pos);
+                        clear_lines_from(base_cursor_pos);
+                        print_table_results(results.clone(), &func_names);
+                        print_histograms_results(results.clone(), &func_names);
 
                         exit(0);
                     }
@@ -95,7 +99,7 @@ pub fn handle_messages(
 
 ////////////////////
 
-fn on_lifecycle(
+fn handle_progress(
     message: ThreadLifecycleMessage,
     func: FunctionName,
     started: &mut [u8],
@@ -153,34 +157,29 @@ fn on_lifecycle(
 
 ////////////////////
 
-fn print_results(
-    results: &mut [Option<BenchmarkResult>],
-    func_names: &[FunctionName],
-    base_cursor_pos: CursorPos,
-) {
-    clear_lines_from(base_cursor_pos);
-
+fn print_table_results(results: Vec<Option<BenchmarkResult>>, func_names: &[FunctionName]) {
     let mut data: Vec<Vec<ColoredText>> = vec![];
 
-    for (i, result) in results.iter().copied().enumerate() {
+    for (i, result) in results.iter().enumerate() {
         match result {
+            None => panic!("Results not found"),
             Some(val) => {
                 let BenchmarkResult {
                     slowest,
                     average,
                     fastest,
                     std_dev,
+                    ..
                 } = val;
 
                 data.push(vec![
                     color_txt(ToColorize::FuncName(func_names[i]), TextColor::Normal),
-                    color_txt(ToColorize::Dur(average), TextColor::Normal),
-                    color_txt(ToColorize::Dur(slowest), TextColor::Normal),
-                    color_txt(ToColorize::Dur(fastest), TextColor::Normal),
-                    color_txt(ToColorize::Dur(std_dev), TextColor::Normal),
+                    color_txt(ToColorize::Dur(*average), TextColor::Normal),
+                    color_txt(ToColorize::Dur(*slowest), TextColor::Normal),
+                    color_txt(ToColorize::Dur(*fastest), TextColor::Normal),
+                    color_txt(ToColorize::Dur(*std_dev), TextColor::Normal),
                 ]);
             }
-            None => panic!("Results not found"),
         }
     }
 
@@ -194,6 +193,22 @@ fn print_results(
         ],
         data,
     );
+}
+
+fn print_histograms_results(results: Vec<Option<BenchmarkResult>>, func_names: &[FunctionName]) {
+    for (i, result) in results.iter().enumerate() {
+        match result {
+            None => panic!("Results not found"),
+            Some(val) => {
+                let BenchmarkResult { times, .. } = val;
+
+                let f_name = func_names[i];
+
+                queue_msg(f_name.to_string());
+                draw_histogram(times.to_vec(), 5);
+            }
+        }
+    }
 }
 
 ////////////////////

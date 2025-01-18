@@ -1,5 +1,6 @@
 use std::{
     fmt,
+    mem::ManuallyDrop,
     sync::{
         mpsc::{channel, SyncSender},
         Arc, Mutex,
@@ -14,12 +15,13 @@ pub const NB_TESTS: u8 = 50;
 
 ////////////////////
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct BenchmarkResult {
     pub fastest: Duration,
     pub slowest: Duration,
     pub average: Duration,
     pub std_dev: Duration,
+    pub times: Vec<Duration>,
 }
 
 pub struct BenchmarkParams {
@@ -27,30 +29,28 @@ pub struct BenchmarkParams {
     on_thread_message: Box<dyn Fn(ThreadLifecycleMessage) + 'static>,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum ThreadLifecycleMsgType {
     Start,
     Stop,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug)]
 pub enum ThreadMessageType {
     Lifecycle,
     Result,
     Tick,
 }
 
-#[derive(Copy, Clone)]
 pub struct FuncThreadMessage {
     pub msg_type: ThreadMessageType,
     pub msg: ThreadMessage,
     pub func: FunctionName,
 }
 
-#[derive(Copy, Clone)]
 pub union ThreadMessage {
-    pub lifecycle_msg: ThreadLifecycleMessage,
-    pub result_msg: BenchmarkResult,
+    pub lifecycle_msg: ManuallyDrop<ThreadLifecycleMessage>,
+    pub result_msg: ManuallyDrop<BenchmarkResult>,
     pub tick_msg: (), // TODO remove
 }
 
@@ -65,7 +65,7 @@ impl fmt::Display for ThreadLifecycleMsgType {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug)]
 pub struct ThreadLifecycleMessage {
     pub msg_type: ThreadLifecycleMsgType,
     pub id: u8,
@@ -201,9 +201,10 @@ pub fn benchmark_fn(args: BenchmarkParams) -> BenchmarkResult {
         .unwrap()
         .div_f32(NB_TESTS as f32);
 
+    let times_vals = times.lock().unwrap();
+
     let std_dev = {
-        let vals = times.lock().unwrap();
-        let durations_ms: Vec<u128> = vals.iter().map(|d| d.as_nanos()).collect();
+        let durations_ms: Vec<u128> = times_vals.iter().map(|d| d.as_nanos()).collect();
 
         let variance = durations_ms
             .iter()
@@ -224,6 +225,7 @@ pub fn benchmark_fn(args: BenchmarkParams) -> BenchmarkResult {
         slowest,
         average,
         std_dev,
+        times: times_vals.to_vec(),
     }
 }
 ////////////////////
@@ -246,7 +248,9 @@ pub fn execute_benchmarks(
                         .send(FuncThreadMessage {
                             func: name,
                             msg_type: ThreadMessageType::Lifecycle,
-                            msg: ThreadMessage { lifecycle_msg: msg },
+                            msg: ThreadMessage {
+                                lifecycle_msg: ManuallyDrop::new(msg),
+                            },
                         })
                         .unwrap();
                 }),
@@ -256,7 +260,9 @@ pub fn execute_benchmarks(
                 .send(FuncThreadMessage {
                     func: name,
                     msg_type: ThreadMessageType::Result,
-                    msg: ThreadMessage { result_msg: res },
+                    msg: ThreadMessage {
+                        result_msg: ManuallyDrop::new(res),
+                    },
                 })
                 .unwrap();
         });

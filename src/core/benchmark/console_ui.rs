@@ -78,8 +78,6 @@ pub fn queue_msg(txt: String) {
     .unwrap();
 }
 
-////////////////////
-
 pub fn color_txt(param: ToColorize, color: TextColor) -> ColoredText {
     let txt = match param {
         ToColorize::Str(s) => s,
@@ -93,5 +91,41 @@ pub fn color_txt(param: ToColorize, color: TextColor) -> ColoredText {
         TextColor::Normal => txt.reset(),
         TextColor::Green => txt.green(),
         TextColor::Yellow => txt.yellow(),
+    }
+}
+
+pub fn draw_histogram(durations: Vec<Duration>, num_bins: usize) {
+    // Find the minimum and maximum durations
+    let min_duration = durations.iter().min().unwrap();
+    let max_duration = durations.iter().max().unwrap();
+
+    // Store millisecond values to avoid temporary value borrowing issues
+    let min_millis = min_duration.as_millis();
+    let max_millis = max_duration.as_millis();
+
+    // Calculate the range and bin size
+    let range = max_millis - min_millis;
+    let bin_size = range / num_bins as u128;
+
+    // Create bins
+    let mut bins = vec![0; num_bins];
+
+    // Populate the bins
+    for duration in durations {
+        let duration_millis = duration.as_millis();
+        let bin_index =
+            ((duration_millis - min_millis) / bin_size).min(num_bins as u128 - 1) as usize;
+        bins[bin_index] += 1;
+    }
+
+    // Find the maximum bin count for scaling
+    let max_count = *bins.iter().max().unwrap_or(&1);
+
+    // Draw the histogram
+    for (i, &count) in bins.iter().enumerate() {
+        let range_start = min_millis + bin_size * i as u128;
+        let range_end = range_start + bin_size;
+        let bar = "#".repeat(count * 50 / max_count); // Scale the bars to max width 50
+        println!("{:>10}ms - {:>10}ms | {}", range_start, range_end, bar);
     }
 }
