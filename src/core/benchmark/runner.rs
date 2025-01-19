@@ -144,6 +144,15 @@ pub fn benchmark_fn(args: BenchmarkParams) -> BenchmarkResult {
 
             let res = func_clone();
 
+            tx_clone
+                .send(ThreadLifecycleMessage {
+                    msg_type: ThreadLifecycleMsgType::Stop,
+                    id: i,
+                })
+                .unwrap();
+
+            /////
+
             let mut fast = faster_clone.lock().unwrap();
             match *fast {
                 None => *fast = Some(res),
@@ -173,13 +182,6 @@ pub fn benchmark_fn(args: BenchmarkParams) -> BenchmarkResult {
             }
 
             times_clone.lock().unwrap().push(res);
-
-            tx_clone
-                .send(ThreadLifecycleMessage {
-                    msg_type: ThreadLifecycleMsgType::Stop,
-                    id: i,
-                })
-                .unwrap();
         });
 
         thread_handles.push(handle);
