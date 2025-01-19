@@ -173,8 +173,8 @@ fn print_table_results(results: Vec<Option<BenchmarkResult>>, func_names: &[Func
                 } = val;
 
                 data.push(vec![
-                    color_txt(ToColorize::FuncName(func_names[i]), TextColor::Normal),
-                    color_txt(ToColorize::Dur(*average), TextColor::Normal),
+                    color_txt(ToColorize::FuncName(func_names[i]), TextColor::Cyan),
+                    color_txt(ToColorize::Dur(*average), TextColor::Yellow),
                     color_txt(ToColorize::Dur(*slowest), TextColor::Normal),
                     color_txt(ToColorize::Dur(*fastest), TextColor::Normal),
                     color_txt(ToColorize::Dur(*std_dev), TextColor::Normal),
@@ -185,8 +185,8 @@ fn print_table_results(results: Vec<Option<BenchmarkResult>>, func_names: &[Func
 
     print_table(
         vec![
-            "Function".to_string(),
-            "Average".to_string(),
+            color_txt(ToColorize::Str("Function".to_string()), TextColor::Cyan).to_string(),
+            color_txt(ToColorize::Str("Average".to_string()), TextColor::Yellow).to_string(),
             "Slowest".to_string(),
             "Fastest".to_string(),
             "Std dev".to_string(),
@@ -199,13 +199,18 @@ fn print_histograms_results(results: Vec<Option<BenchmarkResult>>, func_names: &
     for (i, result) in results.iter().enumerate() {
         match result {
             None => panic!("Results not found"),
-            Some(val) => {
-                let BenchmarkResult { times, .. } = val;
-
+            Some(res) => {
                 let f_name = func_names[i];
 
-                queue_msg(f_name.to_string());
-                draw_histogram(times.to_vec(), 5);
+                queue_msg(
+                    color_txt(ToColorize::Str(f_name.to_string()), TextColor::Cyan).to_string(),
+                );
+                println!();
+                draw_histogram(res);
+
+                if i != results.len() - 1 {
+                    println!();
+                }
             }
         }
     }
