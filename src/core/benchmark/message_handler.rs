@@ -45,7 +45,7 @@ pub fn handle_messages(
             match msg_type {
                 ThreadMessageType::Lifecycle => {
                     let mut _parsed_msg: ManuallyDrop<ThreadLifecycleMessage> = msg.lifecycle_msg;
-                    let parsed_msg = ManuallyDrop::take(&mut _parsed_msg);
+                    let parsed_msg = ManuallyDrop::into_inner(_parsed_msg);
 
                     let func_index = func_names.iter().position(|&r| r == func).unwrap();
 
@@ -72,7 +72,7 @@ pub fn handle_messages(
                 }
                 ThreadMessageType::Result => {
                     let mut _parsed_msg: ManuallyDrop<BenchmarkResult> = msg.result_msg;
-                    let parsed_msg = ManuallyDrop::take(&mut _parsed_msg);
+                    let parsed_msg = ManuallyDrop::into_inner(_parsed_msg);
 
                     let func_index = func_names.iter().position(|&r| r == func).unwrap();
 
