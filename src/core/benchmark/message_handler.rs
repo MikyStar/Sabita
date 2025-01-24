@@ -1,8 +1,9 @@
 use super::{
     console_ui::{
-        clear_lines_from, color_txt, draw_histogram, get_cursor_position, print_table, queue_msg,
-        ColoredText, CursorPos, TextColor, ToColorize,
+        clear_lines_from, color_txt, get_cursor_position, print_table, queue_msg, ColoredText,
+        CursorPos, TextColor, ToColorize,
     },
+    histogram::draw_histogram,
     runner::{
         BenchmarkResult, FuncThreadMessage, FunctionName, ThreadLifecycleMessage,
         ThreadLifecycleMsgType, ThreadMessageType, NB_TESTS,
