@@ -23,6 +23,8 @@ pub fn draw_histogram(results: &BenchmarkResult) {
     let max_nanos = slowest.as_nanos();
     let avg_nanos = average.as_nanos();
 
+    // Bucket computation
+
     let span_before_avg = avg_nanos - min_nanos;
     let span_after_avg = max_nanos - avg_nanos;
 
@@ -36,12 +38,10 @@ pub fn draw_histogram(results: &BenchmarkResult) {
         let duration_nanos = duration.as_nanos();
 
         if duration_nanos <= avg_nanos {
-            // let bucket_index = (duration_nanos - min_nanos) as usize / before_bucket_size;
             let bucket_index = ((duration_nanos - min_nanos) / (before_bucket_size as u128))
                 .min(nb_buckets_arround as u128 - 1) as usize;
             before_buckets[bucket_index] += 1;
         } else {
-            // let bucket_index = (duration_nanos - avg_nanos) as usize / after_bucket_size;
             let bucket_index = ((duration_nanos - avg_nanos) / (after_bucket_size as u128))
                 .min(nb_buckets_arround as u128 - 1) as usize;
 
@@ -63,80 +63,61 @@ pub fn draw_histogram(results: &BenchmarkResult) {
             max_count = after_count;
         }
     }
+
+    // Print lines computation
+
     let largest_count_chars = max_count.to_string().len() as u16;
     let static_delimiter = 4; // Counting spaces and |
 
-    let (to_print_before, largest_title_before) = compute_time_range(
+    let (time_txt_before, largest_title_before) = compute_time_range(
         before_bucket_size as u128,
         nb_buckets_arround as usize,
         min_nanos,
     );
-    let (to_print_after, largest_title_after) = compute_time_range(
+    let (time_text_after, largest_title_after) = compute_time_range(
         before_bucket_size as u128,
         nb_buckets_arround as usize,
         min_nanos,
     );
+
     let largest_title: u16 = max(largest_title_before, largest_title_after);
 
-    // TODO refactor
-    for (i, time_txt) in to_print_before.into_iter().enumerate() {
-        let count = before_buckets[i];
-        let pct = (count * 100) as f64 / times.len() as f64;
+    let full_line_before = compute_rest_of_line(
+        time_txt_before,
+        before_buckets,
+        largest_title,
+        times.len() as f64,
+        terminal_width,
+        largest_count_chars,
+        static_delimiter,
+        max_count as u16,
+    );
+    let full_line_after = compute_rest_of_line(
+        time_text_after,
+        after_buckets,
+        largest_title,
+        times.len() as f64,
+        terminal_width,
+        largest_count_chars,
+        static_delimiter,
+        max_count as u16,
+    );
+    let avg_line = compute_avg_line(
+        avg_nanos,
+        largest_title,
+        largest_count_chars,
+        terminal_width,
+    );
 
-        let nb_spaces_needed = largest_title - (time_txt.len() as u16);
-        let spaces = " ".repeat(nb_spaces_needed as usize);
+    // Printing
 
-        let available_space_for_bar =
-            terminal_width - (largest_title + largest_count_chars + static_delimiter);
-
-        let nb_bars = ((count as u16) * (available_space_for_bar) / (max_count as u16)) as usize;
-        let bar = "█".repeat(nb_bars);
-
-        let space_before = match nb_bars > 0 {
-            true => " ",
-            false => "",
-        };
-
-        let line = format!("{time_txt}{spaces} │ {bar}{space_before}{pct}%");
+    for line in full_line_before {
         println!("{line}");
     }
 
-    let avg_txt = format!(
-        "  Average {}",
-        nano_to_hr(Duration::from_nanos(avg_nanos.try_into().unwrap()))
-    );
-    let nb_spaces_needed = largest_title - (avg_txt.len() as u16);
-    let spaces = " ".repeat(nb_spaces_needed as usize);
+    println!("{avg_line}");
 
-    let available_space_for_bar =
-        (terminal_width - (largest_title + largest_count_chars) + 1) as usize;
-
-    let bar = "─".repeat(available_space_for_bar / 2);
-    let line = color_txt(
-        ToColorize::Str(format!("{avg_txt}{spaces}├{bar}")),
-        TextColor::Yellow,
-    );
-    println!("{line}");
-
-    for (i, time_txt) in to_print_after.into_iter().enumerate() {
-        let count = after_buckets[i];
-        let pct = (count * 100) as f64 / times.len() as f64;
-
-        let nb_spaces_needed = largest_title - (time_txt.len() as u16);
-        let spaces = " ".repeat(nb_spaces_needed as usize);
-
-        let available_space_for_bar =
-            terminal_width - (largest_title + largest_count_chars + static_delimiter);
-
-        let nb_bars = ((count as u16) * (available_space_for_bar) / (max_count as u16)) as usize;
-        let bar = "█".repeat(nb_bars);
-
-        let space_before = match nb_bars > 0 {
-            true => " ",
-            false => "",
-        };
-
-        let line = format!("{time_txt}{spaces} │ {bar}{space_before}{pct}%");
+    for line in full_line_after {
         println!("{line}");
     }
 }
@@ -164,4 +145,66 @@ fn compute_time_range(nb_buckets: u128, bucket_size: usize, lowest_ns: u128) -> 
     }
 
     (to_print, largest_title)
+}
+
+fn compute_rest_of_line(
+    time_range: Vec<String>,
+    bucket: Vec<i32>,
+    largest_title: u16,
+    total_nb_times: f64,
+    terminal_width: u16,
+    largest_count_chars: u16,
+    static_delimiter: u16,
+    max_count: u16,
+) -> Vec<String> {
+    let mut to_print: Vec<String> = vec![];
+
+    for (i, time_txt) in time_range.into_iter().enumerate() {
+        let count = bucket[i];
+        let pct = (count * 100) as f64 / total_nb_times;
+
+        let nb_spaces_needed = largest_title - (time_txt.len() as u16);
+        let spaces = " ".repeat(nb_spaces_needed as usize);
+
+        let available_space_for_bar =
+            terminal_width - (largest_title + largest_count_chars + static_delimiter);
+
+        let nb_bars = ((count as u16) * (available_space_for_bar) / max_count) as usize;
+        let bar = "█".repeat(nb_bars);
+
+        let space_before = match nb_bars > 0 {
+            true => " ",
+            false => "",
+        };
+
+        let line = format!("{time_txt}{spaces} │ {bar}{space_before}{pct}%");
+        to_print.push(line);
+    }
+
+    to_print
+}
+
+fn compute_avg_line(
+    avg_nanos: u128,
+    largest_title: u16,
+    largest_count_chars: u16,
+    terminal_width: u16,
+) -> String {
+    let avg_txt = format!(
+        "  Average {}",
+        nano_to_hr(Duration::from_nanos(avg_nanos.try_into().unwrap()))
+    );
+    let nb_spaces_needed = largest_title - (avg_txt.len() as u16);
+    let spaces = " ".repeat(nb_spaces_needed as usize);
+
+    let available_space_for_bar =
+        (terminal_width - (largest_title + largest_count_chars) + 1) as usize;
+
+    let bar = "─".repeat(available_space_for_bar / 2);
+    let line = color_txt(
+        ToColorize::Str(format!("{avg_txt}{spaces}├{bar}")),
+        TextColor::Yellow,
+    );
+
+    line.to_string()
 }
