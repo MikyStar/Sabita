@@ -8,6 +8,10 @@ use crate::core::benchmark::runner::BenchmarkResult;
 
 ////////////////////////////////////////
 
+const LINE_DELIMITER_COUNT: u16 = 4; // Counting spaces and |
+
+////////////////////////////////////////
+
 pub fn draw_histogram(results: &BenchmarkResult) {
     let BenchmarkResult {
         fastest,
@@ -39,11 +43,11 @@ pub fn draw_histogram(results: &BenchmarkResult) {
 
         if duration_nanos <= avg_nanos {
             let bucket_index = ((duration_nanos - min_nanos) / (before_bucket_size as u128))
-                .min(nb_buckets_arround as u128 - 1) as usize;
+                .min(nb_buckets_arround - 1) as usize;
             before_buckets[bucket_index] += 1;
         } else {
             let bucket_index = ((duration_nanos - avg_nanos) / (after_bucket_size as u128))
-                .min(nb_buckets_arround as u128 - 1) as usize;
+                .min(nb_buckets_arround - 1) as usize;
 
             after_buckets[bucket_index] += 1;
         }
@@ -67,7 +71,6 @@ pub fn draw_histogram(results: &BenchmarkResult) {
     // Print lines computation
 
     let largest_count_chars = max_count.to_string().len() as u16;
-    let static_delimiter = 4; // Counting spaces and |
 
     let (time_txt_before, largest_title_before) = compute_time_range(
         before_bucket_size as u128,
@@ -89,7 +92,6 @@ pub fn draw_histogram(results: &BenchmarkResult) {
         times.len() as f64,
         terminal_width,
         largest_count_chars,
-        static_delimiter,
         max_count as u16,
     );
     let full_line_after = compute_rest_of_line(
@@ -99,7 +101,6 @@ pub fn draw_histogram(results: &BenchmarkResult) {
         times.len() as f64,
         terminal_width,
         largest_count_chars,
-        static_delimiter,
         max_count as u16,
     );
     let avg_line = compute_avg_line(
@@ -154,7 +155,6 @@ fn compute_rest_of_line(
     total_nb_times: f64,
     terminal_width: u16,
     largest_count_chars: u16,
-    static_delimiter: u16,
     max_count: u16,
 ) -> Vec<String> {
     let mut to_print: Vec<String> = vec![];
@@ -167,7 +167,7 @@ fn compute_rest_of_line(
         let spaces = " ".repeat(nb_spaces_needed as usize);
 
         let available_space_for_bar =
-            terminal_width - (largest_title + largest_count_chars + static_delimiter);
+            terminal_width - (largest_title + largest_count_chars + LINE_DELIMITER_COUNT);
 
         let nb_bars = ((count as u16) * (available_space_for_bar) / max_count) as usize;
         let bar = "█".repeat(nb_bars);

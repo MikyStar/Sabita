@@ -1,6 +1,6 @@
 use super::{runner::FunctionName, time_utils::nano_to_hr};
 
-use std::{io::stdout, time::Duration, usize};
+use std::{io::stdout, time::Duration};
 
 use ascii_table::{Align, AsciiTable};
 
