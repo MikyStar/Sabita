@@ -154,6 +154,7 @@ pub fn draw_histogram(results: &BenchmarkResult) {
         }
     }
     let largest_count_chars = max_count.to_string().len() as u16;
+    let static_delimiter = 4; // Counting spaces and |
 
     let mut largest_title: u16 = 0;
     let mut to_print_before: Vec<String> = vec![];
@@ -188,11 +189,11 @@ pub fn draw_histogram(results: &BenchmarkResult) {
     // TODO refactor
     for (i, time_txt) in to_print_before.into_iter().enumerate() {
         let count = before_buckets[i];
+        let pct = (count * 100) as f64 / times.len() as f64;
 
         let nb_spaces_needed = largest_title - (time_txt.len() as u16);
         let spaces = " ".repeat(nb_spaces_needed as usize);
 
-        let static_delimiter = 4; // Counting spaces and |
         let available_space_for_bar =
             terminal_width - (largest_title + largest_count_chars + static_delimiter);
 
@@ -204,7 +205,7 @@ pub fn draw_histogram(results: &BenchmarkResult) {
             false => "",
         };
 
-        let line = format!("{time_txt}{spaces} │ {bar}{space_before}{count}");
+        let line = format!("{time_txt}{spaces} │ {bar}{space_before}{pct}%");
         println!("{line}");
     }
 
@@ -227,11 +228,11 @@ pub fn draw_histogram(results: &BenchmarkResult) {
 
     for (i, time_txt) in to_print_after.into_iter().enumerate() {
         let count = after_buckets[i];
+        let pct = (count * 100) as f64 / times.len() as f64;
 
         let nb_spaces_needed = largest_title - (time_txt.len() as u16);
         let spaces = " ".repeat(nb_spaces_needed as usize);
 
-        let static_delimiter = 4; // Counting spaces and |
         let available_space_for_bar =
             terminal_width - (largest_title + largest_count_chars + static_delimiter);
 
@@ -243,7 +244,7 @@ pub fn draw_histogram(results: &BenchmarkResult) {
             false => "",
         };
 
-        let line = format!("{time_txt}{spaces} │ {bar}{space_before}{count}");
+        let line = format!("{time_txt}{spaces} │ {bar}{space_before}{pct}%");
         println!("{line}");
     }
 }
