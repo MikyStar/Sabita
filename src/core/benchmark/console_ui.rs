@@ -50,7 +50,7 @@ pub fn clear_lines_from(pos: CursorPos) {
     .unwrap();
 }
 
-pub fn print_table(titles: Vec<String>, data: Vec<Vec<ColoredText>>) {
+pub fn print_table(titles: Vec<String>, data: Vec<Vec<ColoredText>>, dump_to_file: bool) {
     let mut ascii_table = AsciiTable::default();
 
     for (i, title) in titles.into_iter().enumerate() {
@@ -62,7 +62,9 @@ pub fn print_table(titles: Vec<String>, data: Vec<Vec<ColoredText>>) {
 
     let table = ascii_table.format(data);
 
-    write(BENCH_FILE.to_string(), vec![table.clone()]);
+    if dump_to_file {
+        write(BENCH_FILE.to_string(), vec![table.clone()]);
+    }
 
     execute!(stdout(), Print(table), Print("\n"), cursor::MoveToColumn(0),).unwrap();
 }

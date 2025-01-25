@@ -1,8 +1,11 @@
+use crate::core::benchmark::config::BENCH_FILE;
+
 use super::{
     console_ui::{
         clear_lines_from, color_txt, get_cursor_position, print_table, queue_msg, ColoredText,
         CursorPos, TextColor, ToColorize,
     },
+    file::write,
     histogram::draw_histogram,
     runner::{
         BenchmarkResult, FuncThreadMessage, FunctionName, ThreadLifecycleMessage,
@@ -153,6 +156,7 @@ fn handle_progress(
             "Done".to_string(),
         ],
         data,
+        false,
     );
 }
 
@@ -193,6 +197,7 @@ fn print_table_results(results: Vec<Option<BenchmarkResult>>, func_names: &[Func
             "Std dev".to_string(),
         ],
         data,
+        true,
     );
 }
 
@@ -203,14 +208,18 @@ fn print_histograms_results(results: Vec<Option<BenchmarkResult>>, func_names: &
             Some(res) => {
                 let f_name = func_names[i];
 
-                queue_msg(
-                    color_txt(ToColorize::Str(f_name.to_string()), TextColor::Cyan).to_string(),
-                );
+                let txt =
+                    color_txt(ToColorize::Str(f_name.to_string()), TextColor::Cyan).to_string();
+
+                queue_msg(txt.clone());
+                write(BENCH_FILE.to_string(), vec![txt]);
+
                 println!();
                 draw_histogram(res);
 
                 if i != results.len() - 1 {
                     println!();
+                    write(BENCH_FILE.to_string(), vec!["".to_string()]);
                 }
             }
         }

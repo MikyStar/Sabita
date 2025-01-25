@@ -1,8 +1,9 @@
 use super::benchmark::{
+    config::BENCH_FILE,
+    console_ui::queue_msg,
+    file::write,
     message_handler::handle_messages,
-    runner::{
-        execute_benchmarks, BenchmarkFunction, BenchmarkResult, FuncThreadMessage, FunctionName,
-    },
+    runner::{execute_benchmarks, BenchmarkFunction, FuncThreadMessage, FunctionName, NB_TESTS},
 };
 
 use super::{
@@ -11,7 +12,6 @@ use super::{
 };
 
 use std::{
-    fmt,
     sync::mpsc::sync_channel,
     time::{Duration, Instant},
 };
@@ -66,8 +66,10 @@ impl fmt::Display for BenchmarkSolver {
 pub fn benchmark() {
     let start = Instant::now();
 
-    println!("----------------------------------------\n");
-    println!("Benchmarking {PKG_NAME}@v{PKG_VERSION} with {NB_TESTS} iterations\n");
+    let txt = format!("Benchmarking {PKG_NAME}@v{PKG_VERSION} with {NB_TESTS} iterations\n");
+
+    queue_msg(txt.clone());
+    write(BENCH_FILE.to_string(), vec![txt]);
 
     let (tx, rx) = sync_channel::<FuncThreadMessage>(1);
 
