@@ -1,14 +1,14 @@
-use super::{runner::FunctionName, time_utils::nano_to_hr};
+use super::{config::BENCH_FILE, file::write, runner::FunctionName, time_utils::nano_to_hr};
 
 use std::{io::stdout, time::Duration};
 
 use ascii_table::{Align, AsciiTable};
-
 use crossterm::{
     cursor, execute,
     style::{Print, StyledContent, Stylize},
     terminal,
 };
+use strip_ansi_escapes::strip;
 
 ////////////////////
 
@@ -60,13 +60,11 @@ pub fn print_table(titles: Vec<String>, data: Vec<Vec<ColoredText>>) {
             .set_align(Align::Center);
     }
 
-    execute!(
-        stdout(),
-        Print(ascii_table.format(data)),
-        Print("\n"),
-        cursor::MoveToColumn(0),
-    )
-    .unwrap();
+    let table = ascii_table.format(data);
+
+    write(BENCH_FILE.to_string(), vec![table.clone()]);
+
+    execute!(stdout(), Print(table), Print("\n"), cursor::MoveToColumn(0),).unwrap();
 }
 
 pub fn queue_msg(txt: String) {
@@ -98,4 +96,10 @@ pub fn color_txt(param: ToColorize, color: TextColor) -> ColoredText {
 
 pub fn get_terminal_width() -> u16 {
     terminal::size().unwrap().0
+}
+
+pub fn remove_style(text: Vec<String>) -> Vec<String> {
+    text.iter()
+        .map(|line| String::from_utf8(strip(line)).unwrap())
+        .collect()
 }
