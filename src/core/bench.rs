@@ -1,9 +1,9 @@
 use super::benchmark::{
     config::BENCH_FILE,
     console_ui::queue_msg,
-    file::write,
+    file::{handle_file, write},
     message_handler::handle_messages,
-    runner::{execute_benchmarks, BenchmarkFunction, FuncThreadMessage, FunctionName, NB_TESTS},
+    runner::{execute_benchmarks, BenchmarkFunction, FuncThreadMessage, NB_TESTS},
 };
 
 use super::{
@@ -18,52 +18,9 @@ use std::{
 
 ////////////////////////////////////////
 
-pub const NB_TESTS: u8 = 50;
-
-////////////////////
-
-#[derive(Debug)]
-pub struct FullBenchmark {
-    solver: BenchmarkSolver,
-    generator: BenchmarkResult,
-}
-
-impl fmt::Display for FullBenchmark {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let solver = format!("----- Solver -----\n\n{}", self.solver);
-        let generator = format!("----- Generator -----\n\n{}", self.generator);
-
-        write!(f, "{solver}\n\n{generator}")
-    }
-}
-
-////////////////////
-
-#[derive(Debug)]
-pub struct BenchmarkSolver {
-    missing_ten: BenchmarkResult,
-    missing_thirty: BenchmarkResult,
-    missing_fifty: BenchmarkResult,
-    missing_sixty_four: BenchmarkResult,
-}
-
-impl fmt::Display for BenchmarkSolver {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let section_10 = format!("** Missing 10 **\n{}", self.missing_ten);
-        let section_30 = format!("** Missing 30 **\n{}", self.missing_thirty);
-        let section_50 = format!("** Missing 50 **\n{}", self.missing_fifty);
-        let section_64 = format!("** Missing 64 **\n{}", self.missing_sixty_four);
-
-        write!(
-            f,
-            "{section_10}\n\n{section_30}\n\n{section_50}\n\n{section_64}"
-        )
-    }
-}
-
-////////////////////////////////////////
-
 pub fn benchmark() {
+    handle_file();
+
     let start = Instant::now();
 
     let txt = format!("Benchmarking {PKG_NAME}@v{PKG_VERSION} with {NB_TESTS} iterations\n");
@@ -73,30 +30,32 @@ pub fn benchmark() {
 
     let (tx, rx) = sync_channel::<FuncThreadMessage>(1);
 
+    // TODO add std_vec_sort https://github.com/Voultapher/driftsort
+
     let to_bench: Vec<BenchmarkFunction> = vec![
         BenchmarkFunction {
-            name: FunctionName::Generate,
+            name: "generate".to_string(),
             f: Box::new(benchmark_one_generate),
         },
         BenchmarkFunction {
-            name: FunctionName::Solv10,
+            name: "solv10".to_string(),
             f: Box::new(solv_10),
         },
         BenchmarkFunction {
-            name: FunctionName::Solv30,
+            name: "solv30".to_string(),
             f: Box::new(solv_30),
         },
         BenchmarkFunction {
-            name: FunctionName::Solv50,
+            name: "solv50".to_string(),
             f: Box::new(solv_50),
         },
-        BenchmarkFunction {
-            name: FunctionName::Solv64,
-            f: Box::new(solv_64),
-        },
+        // BenchmarkFunction {
+        //     name: "solv64",
+        //     f: Box::new(solv_64),
+        // },
     ];
 
-    let f_names = to_bench.iter().map(|f| f.name).collect();
+    let f_names = to_bench.iter().map(|f| f.name.clone()).collect();
 
     execute_benchmarks(tx, to_bench);
     handle_messages(rx, f_names, start);

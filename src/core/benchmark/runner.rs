@@ -12,6 +12,7 @@ use std::{
 ////////////////////
 
 pub const NB_TESTS: u8 = 50;
+pub const CLOCK_FN_NAME: &str = "clock";
 
 ////////////////////
 
@@ -45,7 +46,7 @@ pub enum ThreadMessageType {
 pub struct FuncThreadMessage {
     pub msg_type: ThreadMessageType,
     pub msg: ThreadMessage,
-    pub func: FunctionName,
+    pub func: String,
 }
 
 pub union ThreadMessage {
@@ -71,35 +72,8 @@ pub struct ThreadLifecycleMessage {
     pub id: u8,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum FunctionName {
-    Clock,
-
-    Generate,
-    Solv10,
-    Solv30,
-    Solv50,
-    Solv64,
-}
-
-impl fmt::Display for FunctionName {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let txt = match self {
-            FunctionName::Clock => "clock",
-            FunctionName::Generate => "generate",
-            FunctionName::Solv10 => "solv10",
-            FunctionName::Solv30 => "solv30",
-            FunctionName::Solv50 => "solv50",
-            FunctionName::Solv64 => "solv64",
-        };
-
-        write!(f, "{txt}")
-    }
-}
-
-// TODO maybe bypass this need by just using stringify!(the_func)
 pub struct BenchmarkFunction {
-    pub name: FunctionName,
+    pub name: String,
     pub f: Box<dyn Fn() -> Duration + Send + Sync + 'static>,
 }
 
@@ -230,6 +204,7 @@ pub fn benchmark_fn(args: BenchmarkParams) -> BenchmarkResult {
         times: times_vals.to_vec(),
     }
 }
+
 ////////////////////
 
 pub fn execute_benchmarks(
@@ -239,6 +214,7 @@ pub fn execute_benchmarks(
     for bench_func in functions {
         let sender_clone = sender.clone();
         let BenchmarkFunction { name, f } = bench_func;
+        let n = name.clone();
 
         thread::spawn(move || {
             let sender_clone_again = sender_clone.clone();
@@ -248,7 +224,7 @@ pub fn execute_benchmarks(
                 on_thread_message: Box::new(move |msg| {
                     sender_clone
                         .send(FuncThreadMessage {
-                            func: name,
+                            func: name.clone(),
                             msg_type: ThreadMessageType::Lifecycle,
                             msg: ThreadMessage {
                                 lifecycle_msg: ManuallyDrop::new(msg),
@@ -260,7 +236,7 @@ pub fn execute_benchmarks(
 
             sender_clone_again
                 .send(FuncThreadMessage {
-                    func: name,
+                    func: n,
                     msg_type: ThreadMessageType::Result,
                     msg: ThreadMessage {
                         result_msg: ManuallyDrop::new(res),
@@ -280,7 +256,7 @@ fn start_clock(sender: SyncSender<FuncThreadMessage>) {
 
         sender
             .send(FuncThreadMessage {
-                func: FunctionName::Clock,
+                func: CLOCK_FN_NAME.to_string(),
                 msg_type: ThreadMessageType::Tick,
                 msg: ThreadMessage { tick_msg: () },
             })

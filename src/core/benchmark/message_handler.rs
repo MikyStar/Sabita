@@ -8,8 +8,8 @@ use super::{
     file::write,
     histogram::draw_histogram,
     runner::{
-        BenchmarkResult, FuncThreadMessage, FunctionName, ThreadLifecycleMessage,
-        ThreadLifecycleMsgType, ThreadMessageType, NB_TESTS,
+        BenchmarkResult, FuncThreadMessage, ThreadLifecycleMessage, ThreadLifecycleMsgType,
+        ThreadMessageType, NB_TESTS,
     },
     time_utils::seconds_to_hr,
 };
@@ -25,7 +25,7 @@ use std::{
 
 pub fn handle_messages(
     receiver: Receiver<FuncThreadMessage>,
-    func_names: Vec<FunctionName>,
+    func_names: Vec<String>,
     start: Instant,
 ) {
     let mut started: Vec<u8> = vec![0; func_names.len()];
@@ -50,7 +50,7 @@ pub fn handle_messages(
                     let mut _parsed_msg: ManuallyDrop<ThreadLifecycleMessage> = msg.lifecycle_msg;
                     let parsed_msg = ManuallyDrop::into_inner(_parsed_msg);
 
-                    let func_index = func_names.iter().position(|&r| r == func).unwrap();
+                    let func_index = func_names.iter().position(|r| *r == func).unwrap();
 
                     if !is_first_lifecycle {
                         is_first_lifecycle = true;
@@ -77,7 +77,7 @@ pub fn handle_messages(
                     let mut _parsed_msg: ManuallyDrop<BenchmarkResult> = msg.result_msg;
                     let parsed_msg = ManuallyDrop::into_inner(_parsed_msg);
 
-                    let func_index = func_names.iter().position(|&r| r == func).unwrap();
+                    let func_index = func_names.iter().position(|r| *r == func).unwrap();
 
                     results[func_index] = Some(parsed_msg);
 
@@ -105,10 +105,10 @@ pub fn handle_messages(
 
 fn handle_progress(
     message: ThreadLifecycleMessage,
-    func: FunctionName,
+    func: String,
     started: &mut [u8],
     stopped: &mut [u8],
-    func_names: &[FunctionName],
+    func_names: &[String],
     func_index: usize,
 ) {
     let ThreadLifecycleMessage {
@@ -132,8 +132,8 @@ fn handle_progress(
         let is_curr_func_done = nb_stopped == NB_TESTS;
 
         let f_text = match is_curr_func_done {
-            true => color_txt(ToColorize::FuncName(*f_name), TextColor::Green),
-            false => color_txt(ToColorize::FuncName(*f_name), TextColor::Normal),
+            true => color_txt(ToColorize::Str(f_name.to_string()), TextColor::Green),
+            false => color_txt(ToColorize::Str(f_name.to_string()), TextColor::Normal),
         };
 
         let started_txt = match is_start & is_current_func & !is_curr_func_done {
@@ -162,7 +162,7 @@ fn handle_progress(
 
 ////////////////////
 
-fn print_table_results(results: Vec<Option<BenchmarkResult>>, func_names: &[FunctionName]) {
+fn print_table_results(results: Vec<Option<BenchmarkResult>>, func_names: &[String]) {
     let mut data: Vec<Vec<ColoredText>> = vec![];
 
     for (i, result) in results.iter().enumerate() {
@@ -178,7 +178,7 @@ fn print_table_results(results: Vec<Option<BenchmarkResult>>, func_names: &[Func
                 } = val;
 
                 data.push(vec![
-                    color_txt(ToColorize::FuncName(func_names[i]), TextColor::Cyan),
+                    color_txt(ToColorize::Str(func_names[i].to_string()), TextColor::Cyan),
                     color_txt(ToColorize::Dur(*average), TextColor::Yellow),
                     color_txt(ToColorize::Dur(*slowest), TextColor::Normal),
                     color_txt(ToColorize::Dur(*fastest), TextColor::Normal),
@@ -201,18 +201,18 @@ fn print_table_results(results: Vec<Option<BenchmarkResult>>, func_names: &[Func
     );
 }
 
-fn print_histograms_results(results: Vec<Option<BenchmarkResult>>, func_names: &[FunctionName]) {
+fn print_histograms_results(results: Vec<Option<BenchmarkResult>>, func_names: &[String]) {
     for (i, result) in results.iter().enumerate() {
         match result {
             None => panic!("Results not found"),
             Some(res) => {
-                let f_name = func_names[i];
+                let f_name = &func_names[i];
 
                 let txt =
                     color_txt(ToColorize::Str(f_name.to_string()), TextColor::Cyan).to_string();
 
                 queue_msg(txt.clone());
-                write(BENCH_FILE.to_string(), vec![txt]);
+                write(BENCH_FILE.to_string(), vec![txt, "".to_string()]);
 
                 println!();
                 draw_histogram(res);

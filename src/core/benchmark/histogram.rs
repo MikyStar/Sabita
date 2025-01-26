@@ -1,4 +1,4 @@
-use std::{cmp::max, fmt::write, time::Duration};
+use std::{cmp::max, time::Duration};
 
 use super::{
     console_ui::{color_txt, get_terminal_width, TextColor, ToColorize},

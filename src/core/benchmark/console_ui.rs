@@ -1,4 +1,4 @@
-use super::{config::BENCH_FILE, file::write, runner::FunctionName, time_utils::nano_to_hr};
+use super::{config::BENCH_FILE, file::write, time_utils::nano_to_hr};
 
 use std::{io::stdout, time::Duration};
 
@@ -21,7 +21,6 @@ pub enum ToColorize {
     Str(String),
     Int(i32),
     U8(u8),
-    FuncName(FunctionName),
     Dur(Duration),
 }
 
@@ -84,7 +83,6 @@ pub fn color_txt(param: ToColorize, color: TextColor) -> ColoredText {
         ToColorize::Str(s) => s,
         ToColorize::Int(i) => i.to_string(),
         ToColorize::U8(u) => u.to_string(),
-        ToColorize::FuncName(f) => f.to_string(),
         ToColorize::Dur(d) => nano_to_hr(d),
     };
 
