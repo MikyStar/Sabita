@@ -195,10 +195,13 @@ fn compute_avg_line(
     terminal_width: u16,
 ) -> String {
     let avg_txt = format!(
-        "  Average {}",
+        "─── Average {} ───",
         nano_to_hr(Duration::from_nanos(avg_nanos.try_into().unwrap()))
     );
-    let nb_spaces_needed = largest_title - (avg_txt.len() as u16);
+
+    let txt_len = avg_txt.len() - (6 * 2); // Because '─' takes 2 len, don't know why
+
+    let nb_spaces_needed = largest_title - (txt_len as u16);
     let spaces = " ".repeat(nb_spaces_needed as usize);
 
     let available_space_for_bar =

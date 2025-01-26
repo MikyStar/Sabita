@@ -28,7 +28,7 @@ sabita g file/to/create 50 # Generate a sudoku with 50 missing values
 sabita s file/to/solve # Solve the sudoku (check out file sudoku.example) to see format
 
 # Benchmark
-sabita --benchmark # Launch the benchmarking script, see section below
+sabita --benchmark # Launch the benchmarking script, see the 'Performances' section below
 
 # Help
 sabita -h
