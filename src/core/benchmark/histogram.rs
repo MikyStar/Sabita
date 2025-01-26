@@ -79,9 +79,9 @@ pub fn draw_histogram(results: &BenchmarkResult) {
         min_nanos,
     );
     let (time_text_after, largest_title_after) = compute_time_range(
-        before_bucket_size as u128,
+        after_bucket_size as u128,
         nb_buckets_arround as usize,
-        min_nanos,
+        avg_nanos,
     );
 
     let largest_title: u16 = max(largest_title_before, largest_title_after);

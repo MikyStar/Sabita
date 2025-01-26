@@ -1,8 +1,5 @@
-use super::{
-    config::BENCH_FILE,
-    console_ui::{
-        clear_lines_from, color_txt, get_cursor_position, remove_style, TextColor, ToColorize,
-    },
+use super::console_ui::{
+    clear_lines_from, color_txt, get_cursor_position, remove_style, TextColor, ToColorize,
 };
 
 use std::{
@@ -32,11 +29,11 @@ pub fn write(path: String, lines: Vec<String>) {
     }
 }
 
-pub fn handle_file() {
-    if does_file_exists(BENCH_FILE.to_string()) {
+pub fn handle_file(path: String) {
+    if does_file_exists(path.clone()) {
         let cursor_pos = get_cursor_position();
 
-        println!("File '{BENCH_FILE}' already exists");
+        println!("File '{path}' already exists");
         println!(
             "({})ppend to it, ({})ewrite it, ({})ancel ?",
             color_txt(ToColorize::Str("a".to_string()), TextColor::Green),
@@ -45,17 +42,11 @@ pub fn handle_file() {
         );
 
         let mut prompt = String::new();
-
         stdin().read_line(&mut prompt).expect("Failed to read line");
 
         match prompt.as_str().trim() {
-            "a" => {
-                write(
-                    BENCH_FILE.to_string(),
-                    vec!["".to_string(), "-".repeat(20), "".to_string()],
-                );
-            }
-            "r" => remove_file(BENCH_FILE).unwrap(),
+            "a" => write(path, vec!["".to_string(), "-".repeat(20), "".to_string()]),
+            "r" => remove_file(path).unwrap(),
             "c" => exit(0),
             _ => panic!("Invalid prompt '{prompt}', should be either a, r or c"),
         }

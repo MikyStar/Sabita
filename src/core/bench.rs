@@ -1,12 +1,11 @@
-use super::benchmark::{
-    config::BENCH_FILE,
-    console_ui::queue_msg,
-    file::{handle_file, write},
-    message_handler::handle_messages,
-    runner::{execute_benchmarks, BenchmarkFunction, FuncThreadMessage, NB_TESTS},
-};
-
 use super::{
+    benchmark::{
+        config::BENCH_FILE,
+        console_ui::queue_msg,
+        file::{handle_file, write},
+        message_handler::handle_messages,
+        runner::{execute_benchmarks, BenchmarkFunction, FuncThreadMessage, NB_TESTS},
+    },
     constants::{PKG_NAME, PKG_VERSION},
     grid::Grid,
 };
@@ -19,7 +18,7 @@ use std::{
 ////////////////////////////////////////
 
 pub fn benchmark() {
-    handle_file();
+    handle_file(BENCH_FILE.to_string());
 
     let start = Instant::now();
 
