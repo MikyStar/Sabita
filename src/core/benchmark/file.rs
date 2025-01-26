@@ -1,10 +1,14 @@
-use super::config::BENCH_FILE;
-use super::console_ui::{clear_lines_from, get_cursor_position, remove_style};
+use super::{
+    config::BENCH_FILE,
+    console_ui::{
+        clear_lines_from, color_txt, get_cursor_position, remove_style, TextColor, ToColorize,
+    },
+};
 
-use std::path::Path;
 use std::{
     fs::{remove_file, OpenOptions},
     io::{stdin, Write},
+    path::Path,
     process::exit,
 };
 
@@ -33,7 +37,12 @@ pub fn handle_file() {
         let cursor_pos = get_cursor_position();
 
         println!("File '{BENCH_FILE}' already exists");
-        println!("(a)ppend to it, (r)ewrite it, (c)ancel ?");
+        println!(
+            "({})ppend to it, ({})ewrite it, ({})ancel ?",
+            color_txt(ToColorize::Str("a".to_string()), TextColor::Green),
+            color_txt(ToColorize::Str("r".to_string()), TextColor::Green),
+            color_txt(ToColorize::Str("c".to_string()), TextColor::Green),
+        );
 
         let mut prompt = String::new();
 
