@@ -2,10 +2,10 @@ use std::{cmp::max, time::Duration};
 
 use super::{
     console_ui::{color_txt, get_terminal_width, TextColor, ToColorize},
-    file::write as bench_write,
+    file::write,
     time_utils::nano_to_hr,
 };
-use crate::core::benchmark::{config::BENCH_FILE, runner::BenchmarkResult};
+use crate::core::benchmark::runner::BenchmarkResult;
 
 ////////////////////////////////////////
 
@@ -13,7 +13,11 @@ const LINE_DELIMITER_COUNT: u16 = 4; // Counting spaces and |
 
 ////////////////////////////////////////
 
-pub fn draw_histogram(results: &BenchmarkResult) {
+pub fn draw_histogram(
+    results: &BenchmarkResult,
+    nb_buckets_arround: u128,
+    file_path: Option<String>,
+) {
     let BenchmarkResult {
         fastest,
         slowest,
@@ -21,8 +25,6 @@ pub fn draw_histogram(results: &BenchmarkResult) {
         times,
         ..
     } = results;
-
-    let nb_buckets_arround = 3;
 
     let min_nanos = fastest.as_nanos();
     let max_nanos = slowest.as_nanos();
@@ -113,15 +115,21 @@ pub fn draw_histogram(results: &BenchmarkResult) {
 
     // Printing
 
-    bench_write(BENCH_FILE.to_string(), full_line_before.clone());
+    if let Some(ref path) = file_path {
+        write(path.to_string(), full_line_before.clone());
+    }
     for line in full_line_before {
         println!("{line}");
     }
 
-    bench_write(BENCH_FILE.to_string(), vec![avg_line.clone()]);
+    if let Some(ref path) = file_path {
+        write(path.to_string(), vec![avg_line.clone()]);
+    }
     println!("{avg_line}");
 
-    bench_write(BENCH_FILE.to_string(), full_line_after.clone());
+    if let Some(ref path) = file_path {
+        write(path.to_string(), full_line_after.clone());
+    }
     for line in full_line_after {
         println!("{line}");
     }

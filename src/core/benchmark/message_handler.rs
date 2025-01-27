@@ -1,5 +1,3 @@
-use crate::core::benchmark::config::BENCH_FILE;
-
 use super::{
     console_ui::{
         clear_lines_from, color_txt, get_cursor_position, print_table, queue_msg, ColoredText,
@@ -27,6 +25,8 @@ pub fn handle_messages(
     receiver: Receiver<FuncThreadMessage>,
     func_names: Vec<String>,
     start: Instant,
+    nb_buckets_arround: u128,
+    file_path: Option<String>,
 ) {
     let mut started: Vec<u8> = vec![0; func_names.len()];
     let mut stopped: Vec<u8> = vec![0; func_names.len()];
@@ -85,8 +85,13 @@ pub fn handle_messages(
 
                     if all_done {
                         clear_lines_from(base_cursor_pos);
-                        print_table_results(results.clone(), &func_names);
-                        print_histograms_results(results.clone(), &func_names);
+                        print_table_results(results.clone(), &func_names, file_path.clone());
+                        print_histograms_results(
+                            results.clone(),
+                            &func_names,
+                            nb_buckets_arround,
+                            file_path,
+                        );
 
                         exit(0);
                     }
@@ -156,13 +161,17 @@ fn handle_progress(
             "Done".to_string(),
         ],
         data,
-        false,
+        None,
     );
 }
 
 ////////////////////
 
-fn print_table_results(results: Vec<Option<BenchmarkResult>>, func_names: &[String]) {
+fn print_table_results(
+    results: Vec<Option<BenchmarkResult>>,
+    func_names: &[String],
+    file_path: Option<String>,
+) {
     let mut data: Vec<Vec<ColoredText>> = vec![];
 
     for (i, result) in results.iter().enumerate() {
@@ -197,11 +206,16 @@ fn print_table_results(results: Vec<Option<BenchmarkResult>>, func_names: &[Stri
             "Std dev".to_string(),
         ],
         data,
-        true,
+        file_path,
     );
 }
 
-fn print_histograms_results(results: Vec<Option<BenchmarkResult>>, func_names: &[String]) {
+fn print_histograms_results(
+    results: Vec<Option<BenchmarkResult>>,
+    func_names: &[String],
+    nb_buckets_arround: u128,
+    file_path: Option<String>,
+) {
     for (i, result) in results.iter().enumerate() {
         match result {
             None => panic!("Results not found"),
@@ -212,14 +226,18 @@ fn print_histograms_results(results: Vec<Option<BenchmarkResult>>, func_names: &
                     color_txt(ToColorize::Str(f_name.to_string()), TextColor::Cyan).to_string();
 
                 queue_msg(txt.clone());
-                write(BENCH_FILE.to_string(), vec![txt, "".to_string()]);
+                if let Some(ref path) = file_path {
+                    write(path.to_string(), vec![txt, "".to_string()]);
+                }
 
                 println!();
-                draw_histogram(res);
+                draw_histogram(res, nb_buckets_arround, file_path.clone());
 
                 if i != results.len() - 1 {
                     println!();
-                    write(BENCH_FILE.to_string(), vec!["".to_string()]);
+                    if let Some(ref path) = file_path {
+                        write(path.to_string(), vec!["".to_string()]);
+                    }
                 }
             }
         }

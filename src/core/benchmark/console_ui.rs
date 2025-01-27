@@ -1,4 +1,4 @@
-use super::{config::BENCH_FILE, file::write, time_utils::nano_to_hr};
+use super::{file::write, time_utils::nano_to_hr};
 
 use std::{io::stdout, time::Duration};
 
@@ -49,7 +49,7 @@ pub fn clear_lines_from(pos: CursorPos) {
     .unwrap();
 }
 
-pub fn print_table(titles: Vec<String>, data: Vec<Vec<ColoredText>>, dump_to_file: bool) {
+pub fn print_table(titles: Vec<String>, data: Vec<Vec<ColoredText>>, file_path: Option<String>) {
     let mut ascii_table = AsciiTable::default();
 
     for (i, title) in titles.into_iter().enumerate() {
@@ -61,8 +61,8 @@ pub fn print_table(titles: Vec<String>, data: Vec<Vec<ColoredText>>, dump_to_fil
 
     let table = ascii_table.format(data);
 
-    if dump_to_file {
-        write(BENCH_FILE.to_string(), vec![table.clone()]);
+    if let Some(ref path) = file_path {
+        write(path.to_string(), vec![table.clone()]);
     }
 
     execute!(stdout(), Print(table), Print("\n"), cursor::MoveToColumn(0),).unwrap();

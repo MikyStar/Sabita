@@ -1,63 +1,49 @@
 use super::{
     benchmark::{
-        config::BENCH_FILE,
-        console_ui::queue_msg,
-        file::{handle_file, write},
-        message_handler::handle_messages,
-        runner::{execute_benchmarks, BenchmarkFunction, FuncThreadMessage, NB_TESTS},
+        benchmark::{benchmark as lib_bench, Config},
+        file::FilePolicy,
+        runner::BenchmarkFunction,
     },
-    constants::{PKG_NAME, PKG_VERSION},
     grid::Grid,
 };
 
-use std::{
-    sync::mpsc::sync_channel,
-    time::{Duration, Instant},
-};
+use std::time::{Duration, Instant};
+
+////////////////////////////////////////
+
+const BENCH_FILE: &str = "temp.benchmark";
 
 ////////////////////////////////////////
 
 pub fn benchmark() {
-    handle_file(BENCH_FILE.to_string());
-
-    let start = Instant::now();
-
-    let txt = format!("Benchmarking {PKG_NAME}@v{PKG_VERSION} with {NB_TESTS} iterations\n");
-
-    queue_msg(txt.clone());
-    write(BENCH_FILE.to_string(), vec![txt]);
-
-    let (tx, rx) = sync_channel::<FuncThreadMessage>(1);
-
-    // TODO add std_vec_sort https://github.com/Voultapher/driftsort
-
-    let to_bench: Vec<BenchmarkFunction> = vec![
-        BenchmarkFunction {
-            name: "generate".to_string(),
-            f: Box::new(benchmark_one_generate),
-        },
-        BenchmarkFunction {
-            name: "solv10".to_string(),
-            f: Box::new(solv_10),
-        },
-        BenchmarkFunction {
-            name: "solv30".to_string(),
-            f: Box::new(solv_30),
-        },
-        BenchmarkFunction {
-            name: "solv50".to_string(),
-            f: Box::new(solv_50),
-        },
-        // BenchmarkFunction {
-        //     name: "solv64",
-        //     f: Box::new(solv_64),
-        // },
-    ];
-
-    let f_names = to_bench.iter().map(|f| f.name.clone()).collect();
-
-    execute_benchmarks(tx, to_bench);
-    handle_messages(rx, f_names, start);
+    lib_bench(Config {
+        file_path: Some(BENCH_FILE.to_string()),
+        default_file_policy: Some(FilePolicy::Rewrite),
+        nb_buckets_around_avg: 3,
+        nb_iterations: 50,
+        functions: vec![
+            BenchmarkFunction {
+                name: "generate".to_string(),
+                f: Box::new(benchmark_one_generate),
+            },
+            // BenchmarkFunction {
+            //     name: "solv10".to_string(),
+            //     f: Box::new(solv_10),
+            // },
+            // BenchmarkFunction {
+            //     name: "solv30".to_string(),
+            //     f: Box::new(solv_30),
+            // },
+            // BenchmarkFunction {
+            //     name: "solv50".to_string(),
+            //     f: Box::new(solv_50),
+            // },
+            // BenchmarkFunction {
+            //     name: "solv64",
+            //     f: Box::new(solv_64),
+            // },
+        ],
+    });
 }
 
 ////////////////////
