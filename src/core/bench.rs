@@ -4,6 +4,7 @@ use super::{
         file::FilePolicy,
         runner::BenchmarkFunction,
     },
+    constants::PKG_VERSION,
     grid::Grid,
 };
 
@@ -11,13 +12,11 @@ use std::time::{Duration, Instant};
 
 ////////////////////////////////////////
 
-const BENCH_FILE: &str = "temp.benchmark";
-
-////////////////////////////////////////
-
 pub fn benchmark() {
+    let file_path = format!("benchmarks/v{PKG_VERSION}.benchmark");
+
     lib_bench(Config {
-        file_path: Some(BENCH_FILE.to_string()),
+        file_path: Some(file_path),
         default_file_policy: Some(FilePolicy::Rewrite),
         nb_buckets_around_avg: 3,
         nb_iterations: 50,
@@ -26,20 +25,20 @@ pub fn benchmark() {
                 name: "generate".to_string(),
                 f: Box::new(benchmark_one_generate),
             },
+            BenchmarkFunction {
+                name: "solv10".to_string(),
+                f: Box::new(solv_10),
+            },
+            BenchmarkFunction {
+                name: "solv30".to_string(),
+                f: Box::new(solv_30),
+            },
+            BenchmarkFunction {
+                name: "solv50".to_string(),
+                f: Box::new(solv_50),
+            },
             // BenchmarkFunction {
-            //     name: "solv10".to_string(),
-            //     f: Box::new(solv_10),
-            // },
-            // BenchmarkFunction {
-            //     name: "solv30".to_string(),
-            //     f: Box::new(solv_30),
-            // },
-            // BenchmarkFunction {
-            //     name: "solv50".to_string(),
-            //     f: Box::new(solv_50),
-            // },
-            // BenchmarkFunction {
-            //     name: "solv64",
+            //     name: "solv64".to_string(),
             //     f: Box::new(solv_64),
             // },
         ],

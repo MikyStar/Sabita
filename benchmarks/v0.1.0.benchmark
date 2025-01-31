@@ -1,0 +1,29 @@
+Benchmarking sabita@v0.1.0 with 50 iterations (unoptimized build)
+
+----- Solver -----
+
+** Missing 10 **
+Average: 5ms 83µs 290ns
+Fastest: 105µs 958ns
+Slowest: 111ms 683µs 730ns
+
+** Missing 30 **
+Average: 1ms 159µs 275ns
+Fastest: 379µs 285ns
+Slowest: 30ms 823µs 848ns
+
+** Missing 50 **
+Average: 113ms 831µs 922ns
+Fastest: 928µs 919ns
+Slowest: 1s 96ms 342µs 653ns
+
+** Missing 64 **
+Average: 12s 920ms 422µs 554ns
+Fastest: 2ms 430µs 912ns
+Slowest: 2m 19s 889ms 608µs 737ns
+
+----- Generator -----
+
+Average: 168ms 522µs 790ns
+Fastest: 6ms 171µs 787ns
+Slowest: 489ms 213µs 53ns

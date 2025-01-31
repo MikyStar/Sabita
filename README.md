@@ -41,7 +41,7 @@ sabita --version
 
 ## Performances
 
-Performances are benchmarked through the `src/core/benchmark.rs` and the results are written in the `benchmark.log` file
+Performances are benchmarked through the `src/core/bench.rs` and the results are written in the `benchmarks` folder
 
 ## Dev
 
