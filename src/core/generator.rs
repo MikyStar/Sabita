@@ -6,10 +6,7 @@ use super::{
     solver::{locate_missing_box, solve},
 };
 
-use rand::{
-    distributions::{Distribution, Uniform},
-    Rng,
-};
+use rand::{distr::Uniform, rng, Rng};
 
 use std::fmt;
 
@@ -53,14 +50,14 @@ pub fn remove_random_values(
 
     let mut matrix = values.clone();
 
-    let mut rng = rand::thread_rng();
-    let pos = Uniform::from(TO_BE_SOLVED..LENGTH_DIMENSION);
+    let mut generator = rng();
+    let pos = Uniform::try_from(TO_BE_SOLVED..LENGTH_DIMENSION).unwrap();
 
     let mut loc_removed = vec![];
 
     while loc_removed.len() < nb_to_remove.into() {
-        let line = pos.sample(&mut rng) as usize;
-        let column = pos.sample(&mut rng) as usize;
+        let line = generator.sample(&pos) as usize;
+        let column = generator.sample(&pos) as usize;
 
         let location = BoxLocation {
             line,
@@ -102,8 +99,8 @@ fn swap_lines(values: &mut GridValues) {
 }
 
 fn random_permutations(values: &mut GridValues) {
-    let mut rng = rand::thread_rng();
-    let value = Uniform::from(1..LENGTH_DIMENSION + 1);
+    let mut generator = rng();
+    let value = Uniform::try_from(1..LENGTH_DIMENSION + 1).unwrap();
 
     let mut available_values = vec![];
     for i in 0..(LENGTH_DIMENSION) {
@@ -120,11 +117,11 @@ fn random_permutations(values: &mut GridValues) {
     }
 
     let available_pairs = (available_values.len() / 2) as u8; // Already floored by u8 type
-    let nb_permutations = rng.gen_range(2..available_pairs);
+    let nb_permutations = generator.random_range(2..available_pairs);
 
     for _ in 0..nb_permutations {
-        let value_a = value.sample(&mut rng);
-        let value_b = value.sample(&mut rng);
+        let value_a = generator.sample(&value);
+        let value_b = generator.sample(&value);
 
         permute_values(values, value_a, value_b);
     }
