@@ -1,4 +1,4 @@
-pub mod benchmark;
+pub mod bench;
 pub mod console_ui;
 pub mod file;
 pub mod histogram;

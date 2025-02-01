@@ -56,8 +56,8 @@ pub fn remove_random_values(
     let mut loc_removed = vec![];
 
     while loc_removed.len() < nb_to_remove.into() {
-        let line = generator.sample(&pos) as usize;
-        let column = generator.sample(&pos) as usize;
+        let line = generator.sample(pos) as usize;
+        let column = generator.sample(pos) as usize;
 
         let location = BoxLocation {
             line,
@@ -120,8 +120,8 @@ fn random_permutations(values: &mut GridValues) {
     let nb_permutations = generator.random_range(2..available_pairs);
 
     for _ in 0..nb_permutations {
-        let value_a = generator.sample(&value);
-        let value_b = generator.sample(&value);
+        let value_a = generator.sample(value);
+        let value_b = generator.sample(value);
 
         permute_values(values, value_a, value_b);
     }

@@ -39,35 +39,36 @@ pub fn write(path: String, lines: Vec<String>) {
 
 pub fn handle_file(path: String, policy: Option<FilePolicy>) {
     if does_file_exists(path.clone()) {
-        if policy.is_none() {
-            let cursor_pos = get_cursor_position();
-
-            println!("File '{path}' already exists");
-            println!(
-                "({})ppend to it, ({})ewrite it, ({})ancel ?",
-                color_txt(ToColorize::Str("a".to_string()), TextColor::Green),
-                color_txt(ToColorize::Str("r".to_string()), TextColor::Green),
-                color_txt(ToColorize::Str("c".to_string()), TextColor::Green),
-            );
-
-            let mut prompt = String::new();
-            stdin().read_line(&mut prompt).expect("Failed to read line");
-
-            match prompt.as_str().trim() {
-                "a" => write(path, vec!["".to_string(), "-".repeat(20), "".to_string()]),
-                "r" => remove_file(path).unwrap(),
-                "c" => exit(0),
-                _ => panic!("Invalid prompt '{prompt}', should be either a, r or c"),
-            }
-
-            clear_lines_from(cursor_pos);
-        } else {
-            match policy.unwrap() {
+        match policy {
+            Some(pol) => match pol {
                 FilePolicy::Append => {
                     write(path, vec!["".to_string(), "-".repeat(20), "".to_string()])
                 }
                 FilePolicy::Rewrite => remove_file(path).unwrap(),
                 FilePolicy::Cancel => exit(0),
+            },
+            None => {
+                let cursor_pos = get_cursor_position();
+
+                println!("File '{path}' already exists");
+                println!(
+                    "({})ppend to it, ({})ewrite it, ({})ancel ?",
+                    color_txt(ToColorize::Str("a".to_string()), TextColor::Green),
+                    color_txt(ToColorize::Str("r".to_string()), TextColor::Green),
+                    color_txt(ToColorize::Str("c".to_string()), TextColor::Green),
+                );
+
+                let mut prompt = String::new();
+                stdin().read_line(&mut prompt).expect("Failed to read line");
+
+                match prompt.as_str().trim() {
+                    "a" => write(path, vec!["".to_string(), "-".repeat(20), "".to_string()]),
+                    "r" => remove_file(path).unwrap(),
+                    "c" => exit(0),
+                    _ => panic!("Invalid prompt '{prompt}', should be either a, r or c"),
+                }
+
+                clear_lines_from(cursor_pos);
             }
         }
     }

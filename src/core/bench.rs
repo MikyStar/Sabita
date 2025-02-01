@@ -1,6 +1,6 @@
 use super::{
     benchmark::{
-        benchmark::{benchmark as lib_bench, Config},
+        bench::{benchmark as lib_bench, Config},
         file::FilePolicy,
         runner::BenchmarkFunction,
     },
@@ -18,7 +18,7 @@ pub fn benchmark() {
     lib_bench(Config {
         file_path: Some(file_path),
         default_file_policy: Some(FilePolicy::Rewrite),
-        nb_buckets_around_avg: 3,
+        nb_buckets_around_avg: 5,
         nb_iterations: 50,
         functions: vec![
             BenchmarkFunction {
@@ -37,10 +37,10 @@ pub fn benchmark() {
                 name: "solv50".to_string(),
                 f: Box::new(solv_50),
             },
-            // BenchmarkFunction {
-            //     name: "solv64".to_string(),
-            //     f: Box::new(solv_64),
-            // },
+            BenchmarkFunction {
+                name: "solv64".to_string(),
+                f: Box::new(solv_64),
+            },
         ],
     });
 }
