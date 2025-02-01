@@ -1,4 +1,4 @@
-use std::{cmp::max, time::Duration};
+use std::{cmp::max, time::Duration, usize};
 
 use super::{
     console_ui::{color_txt, get_terminal_width, TextColor, ToColorize},
@@ -35,24 +35,29 @@ pub fn draw_histogram(
     let span_before_avg = avg_nanos - min_nanos;
     let span_after_avg = max_nanos - avg_nanos;
 
-    let before_bucket_size = (span_before_avg / nb_buckets_arround) as usize;
-    let after_bucket_size = (span_after_avg / nb_buckets_arround) as usize;
+    let before_bucket_size = span_before_avg.checked_div(nb_buckets_arround).unwrap();
+    let after_bucket_size = span_after_avg.checked_div(nb_buckets_arround).unwrap();
 
-    let mut before_buckets = vec![0; before_bucket_size];
-    let mut after_buckets = vec![0; after_bucket_size];
+    let mut before_buckets = vec![0; nb_buckets_arround as usize];
+    let mut after_buckets = vec![0; nb_buckets_arround as usize];
 
     for duration in times {
         let duration_nanos = duration.as_nanos();
 
         if duration_nanos <= avg_nanos {
-            let bucket_index = ((duration_nanos - min_nanos) / (before_bucket_size as u128))
-                .min(nb_buckets_arround - 1) as usize;
-            before_buckets[bucket_index] += 1;
-        } else {
-            let bucket_index = ((duration_nanos - avg_nanos) / (after_bucket_size as u128))
-                .min(nb_buckets_arround - 1) as usize;
+            let bucket_index =
+                ((duration_nanos - min_nanos) / before_bucket_size).min(nb_buckets_arround - 1);
+            let index =
+                usize::try_from(bucket_index).expect("Overflow: value is too large for usize");
 
-            after_buckets[bucket_index] += 1;
+            before_buckets[index] += 1;
+        } else {
+            let bucket_index =
+                ((duration_nanos - avg_nanos) / after_bucket_size).min(nb_buckets_arround - 1);
+            let index =
+                usize::try_from(bucket_index).expect("Overflow: value is too large for usize");
+
+            after_buckets[index] += 1;
         }
     }
 
@@ -76,13 +81,13 @@ pub fn draw_histogram(
     let largest_count_chars = max_count.to_string().len() as u16;
 
     let (time_txt_before, largest_title_before) = compute_time_range(
+        nb_buckets_arround as u128,
         before_bucket_size as u128,
-        nb_buckets_arround as usize,
         min_nanos,
     );
     let (time_text_after, largest_title_after) = compute_time_range(
+        nb_buckets_arround as u128,
         after_bucket_size as u128,
-        nb_buckets_arround as usize,
         avg_nanos,
     );
 
@@ -137,16 +142,16 @@ pub fn draw_histogram(
 
 ////////////////////
 
-fn compute_time_range(nb_buckets: u128, bucket_size: usize, lowest_ns: u128) -> (Vec<String>, u16) {
+fn compute_time_range(nb_buckets: u128, bucket_span: u128, lowest_ns: u128) -> (Vec<String>, u16) {
     let mut to_print: Vec<String> = vec![];
     let mut largest_title: u16 = 0;
 
-    for i in 0..bucket_size {
-        let range_start = lowest_ns + nb_buckets * (i as u128);
-        let range_end = range_start + nb_buckets;
+    for i in 0..nb_buckets {
+        let range_start = lowest_ns + bucket_span * (i as u128);
+        let range_end = range_start + bucket_span;
 
-        let start = nano_to_hr(Duration::from_nanos(range_start.try_into().unwrap()));
-        let end = nano_to_hr(Duration::from_nanos(range_end.try_into().unwrap()));
+        let start = nano_to_hr(Duration::from_nanos(range_start as u64));
+        let end = nano_to_hr(Duration::from_nanos(range_end as u64));
 
         let line = format!("{start} - {end}");
 
@@ -203,11 +208,11 @@ fn compute_avg_line(
     terminal_width: u16,
 ) -> String {
     let avg_txt = format!(
-        "─── Average {} ───",
+        "─── Average {}",
         nano_to_hr(Duration::from_nanos(avg_nanos.try_into().unwrap()))
     );
 
-    let txt_len = avg_txt.len() - (6 * 2); // Because '─' takes 2 len, don't know why
+    let txt_len = avg_txt.len() - (3 * 2); // Because '─' takes 3 len, don't know why
 
     let nb_spaces_needed = largest_title - (txt_len as u16);
     let spaces = " ".repeat(nb_spaces_needed as usize);
