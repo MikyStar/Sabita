@@ -45,17 +45,21 @@ pub fn draw_histogram(
         let duration_nanos = duration.as_nanos();
 
         if duration_nanos <= avg_nanos {
-            let bucket_index =
-                ((duration_nanos - min_nanos) / before_bucket_size).min(nb_buckets_arround - 1);
-            let index =
-                usize::try_from(bucket_index).expect("Overflow: value is too large for usize");
+            let index = find_bucket_index(
+                duration_nanos,
+                min_nanos,
+                before_bucket_size,
+                nb_buckets_arround,
+            );
 
             before_buckets[index] += 1;
         } else {
-            let bucket_index =
-                ((duration_nanos - avg_nanos) / after_bucket_size).min(nb_buckets_arround - 1);
-            let index =
-                usize::try_from(bucket_index).expect("Overflow: value is too large for usize");
+            let index = find_bucket_index(
+                duration_nanos,
+                avg_nanos,
+                after_bucket_size,
+                nb_buckets_arround,
+            );
 
             after_buckets[index] += 1;
         }
@@ -105,6 +109,7 @@ pub fn draw_histogram(
         largest_count_chars,
         max_count as u16,
     );
+
     let avg_line = compute_avg_line(
         avg_nanos,
         largest_title,
@@ -135,6 +140,17 @@ pub fn draw_histogram(
 }
 
 ////////////////////
+
+fn find_bucket_index(
+    duration_ns: u128,
+    lowest_ns: u128,
+    bucket_size: u128,
+    nb_buckets_arround: u128,
+) -> usize {
+    let bucket_index = ((duration_ns - lowest_ns) / bucket_size).min(nb_buckets_arround - 1);
+
+    usize::try_from(bucket_index).expect("Overflow: value is too large for usize")
+}
 
 fn compute_time_range(nb_buckets: u128, bucket_span: u128, lowest_ns: u128) -> (Vec<String>, u16) {
     let mut to_print: Vec<String> = vec![];
