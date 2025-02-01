@@ -1,4 +1,4 @@
-use std::{cmp::max, time::Duration, usize};
+use std::{cmp::max, time::Duration};
 
 use super::{
     console_ui::{color_txt, get_terminal_width, TextColor, ToColorize},
@@ -80,16 +80,10 @@ pub fn draw_histogram(
 
     let largest_count_chars = max_count.to_string().len() as u16;
 
-    let (time_txt_before, largest_title_before) = compute_time_range(
-        nb_buckets_arround as u128,
-        before_bucket_size as u128,
-        min_nanos,
-    );
-    let (time_text_after, largest_title_after) = compute_time_range(
-        nb_buckets_arround as u128,
-        after_bucket_size as u128,
-        avg_nanos,
-    );
+    let (time_txt_before, largest_title_before) =
+        compute_time_range(nb_buckets_arround, before_bucket_size, min_nanos);
+    let (time_text_after, largest_title_after) =
+        compute_time_range(nb_buckets_arround, after_bucket_size, avg_nanos);
 
     let largest_title: u16 = max(largest_title_before, largest_title_after);
 
@@ -147,7 +141,7 @@ fn compute_time_range(nb_buckets: u128, bucket_span: u128, lowest_ns: u128) -> (
     let mut largest_title: u16 = 0;
 
     for i in 0..nb_buckets {
-        let range_start = lowest_ns + bucket_span * (i as u128);
+        let range_start = lowest_ns + bucket_span * i;
         let range_end = range_start + bucket_span;
 
         let start = nano_to_hr(Duration::from_nanos(range_start as u64));
