@@ -1,6 +1,7 @@
 # Sabita (錆びた)
 
 ![Lint/Security/Dependencies/Tests](https://github.com/MikyStar/Sabita/actions/workflows/test-lint-audit.yml/badge.svg)
+![crates.io version](https://img.shields.io/crates/v/sabita)
 
 Sabita is a Sudoku solver / generator made with Rust
 
@@ -27,12 +28,20 @@ sabita g file/to/create 50 # Generate a sudoku with 50 missing values
 sabita s file/to/solve # Solve the sudoku (check out file sudoku.example) to see format
 
 # Benchmark
-sabita --benchmark # Launch the benchmarking script, see section below
+sabita --benchmark # Launch the benchmarking script, see the 'Performances' section below
+
+# Help
+sabita -h
+sabita --help
+
+# Version
+sabita -v
+sabita --version
 ```
 
 ## Performances
 
-Performances are benchmarked through the `src/core/benchmark.rs` and the results are written in the `benchmark.log` file
+Performances are benchmarked through the `src/core/bench.rs` and the results are written in the `benchmarks` folder
 
 ## Dev
 

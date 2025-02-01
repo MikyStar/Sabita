@@ -1,5 +1,7 @@
-use super::constants::{LENGTH_DIMENSION, TO_BE_SOLVED};
-use super::grid::{region_to_location, BoxLocation, GridValues};
+use super::{
+    constants::{LENGTH_DIMENSION, TO_BE_SOLVED},
+    grid::{region_to_location, BoxLocation, GridValues},
+};
 
 use std::fmt;
 

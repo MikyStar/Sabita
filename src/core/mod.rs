@@ -1,3 +1,4 @@
+pub mod bench;
 pub mod benchmark;
 pub mod cli;
 pub mod constants;

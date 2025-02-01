@@ -1,6 +1,4 @@
-use std::env;
-use std::fmt;
-use std::path::Path;
+use std::{env, fmt, path::Path};
 
 ////////////////////////////////////////
 

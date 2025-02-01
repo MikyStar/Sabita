@@ -1,6 +1,9 @@
-use sabita::core::benchmark::benchmark;
-use sabita::core::cli::{parse_args, ArgParsed, ACTION};
-use sabita::core::grid::Grid;
+use sabita::core::{
+    bench::benchmark,
+    cli::{parse_args, ArgParsed, ACTION},
+    constants::{PKG_NAME, PKG_VERSION},
+    grid::Grid,
+};
 
 use std::process::exit;
 
@@ -57,34 +60,25 @@ fn main() {
 ////////////////////
 
 fn help_benchmark() {
-    let name: &str = env!("CARGO_PKG_NAME");
-
     println!("Benchmark:");
-    println!("           {name} --benchmark");
+    println!("           {PKG_NAME} --benchmark");
 }
 
 fn version() {
-    let name: &str = env!("CARGO_PKG_NAME");
-    let version: &str = env!("CARGO_PKG_VERSION");
-
-    println!("{name} v{version}")
+    println!("{PKG_NAME} v{PKG_VERSION}")
 }
 
 fn help_solver() {
-    let name: &str = env!("CARGO_PKG_NAME");
-
     println!("Solver:");
-    println!("         {name} s <file/to/solve>");
+    println!("         {PKG_NAME} s <file/to/solve>");
     println!("Example:");
-    println!("         {name} s sudoku.example");
+    println!("         {PKG_NAME} s sudoku.example");
 }
 
 fn help_generate() {
-    let name: &str = env!("CARGO_PKG_NAME");
-
     println!("Generator:");
-    println!("           {name} g <file/to/create> [optional number of missing boxes]");
+    println!("           {PKG_NAME} g <file/to/create> [optional number of missing boxes]");
     println!("Example:");
-    println!("           {name} g sudoku.txt");
-    println!("           {name} g sudoku.txt 52");
+    println!("           {PKG_NAME} g sudoku.txt");
+    println!("           {PKG_NAME} g sudoku.txt 52");
 }
