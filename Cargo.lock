@@ -400,7 +400,7 @@ dependencies = [
 
 [[package]]
 name = "sabita"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "ascii_table",
  "crossterm",
