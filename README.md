@@ -72,6 +72,8 @@ cargo doc # Generates HTML documentation
 cargo clean # Remove 'targer' directory (build artifacts, doc ...)
 
 cargo publish # Publish project to crates.io registry
+
+cargo tree # Recursize list of lib dependencies
 ```
 
 ### Git hooks

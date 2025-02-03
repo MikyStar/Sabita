@@ -19,8 +19,8 @@ jobs:
           - aarch64-unknown-linux-gnu
           - x86_64-apple-darwin
           - aarch64-apple-darwin
-          - x86_64-pc-windows-msvc
-          - aarch64-pc-windows-msvc
+          # - x86_64-pc-windows-msvc
+          # - aarch64-pc-windows-msvc
 
         include:
           - target: x86_64-apple-darwin
@@ -44,7 +44,6 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y musl-tools
-
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
@@ -68,20 +67,20 @@ jobs:
           name: "$PKG_NAME-${{ matrix.target }}"
           path: $BIN_FOLDER
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: $BIN_FOLDER
-
-      - name: Create release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: "$BIN_FOLDER$PKG_NAME-*"
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
-          draft: false
-          prerelease: false
+  # release:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Download artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         path: $BIN_FOLDER
+  #
+  #     - name: Create release
+  #       uses: softprops/action-gh-release@v2
+  #       with:
+  #         files: "$BIN_FOLDER$PKG_NAME-*"
+  #         tag_name: ${{ github.ref_name }}
+  #         name: Release ${{ github.ref_name }}
+  #         draft: false
+  #         prerelease: false
