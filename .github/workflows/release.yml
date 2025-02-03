@@ -1,0 +1,75 @@
+name: Build Binaries
+
+on:
+  push:
+    branches: [ "v0.3.1" ]
+  workflow_dispatch:  # Allow manual triggering
+
+env:
+  PKG_NAME: sabita
+  BIN_FOLDER: bin/
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-gnu
+          - x86_64-apple-darwin
+          - aarch64-apple-darwin
+          - x86_64-pc-windows-msvc
+          - aarch64-pc-windows-msvc
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y musl-tools
+
+      - name: Build binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package binary
+        run: |
+          mkdir -p dist
+          asset_name="$PKG_NAME-${{ matrix.target }}"
+          if [[ "${{ matrix.target }}" == *"windows"* ]]; then
+            asset_name="$asset_name.exe"
+          fi
+          cp target/${{ matrix.target }}/release/mybinary "$BIN_FOLDER$asset_name"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mybinary-${{ matrix.target }}
+          path: $BIN_FOLDER
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: $BIN_FOLDER
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "$BIN_FOLDER$PKG_NAME-*"
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
