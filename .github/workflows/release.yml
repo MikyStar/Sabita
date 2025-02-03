@@ -54,12 +54,12 @@ jobs:
           if [[ "${{ matrix.target }}" == *"windows"* ]]; then
             asset_name="$asset_name.exe"
           fi
-          cp target/${{ matrix.target }}/release/mybinary "$BIN_FOLDER$asset_name"
+          cp "target/${{ matrix.target }}/release/$PKG_NAME" "$BIN_FOLDER$PKG_NAME"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mybinary-${{ matrix.target }}
+          name: "$PKG_NAME-${{ matrix.target }}"
           path: $BIN_FOLDER
 
   release:
