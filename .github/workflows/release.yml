@@ -61,13 +61,13 @@ jobs:
           if [[ "${{ matrix.target }}" == *"windows"* ]]; then
             asset_name="$asset_name.exe"
           fi
-          cp "target/${{ matrix.target }}/release/$PKG_NAME" "$BIN_FOLDER$PKG_NAME"
+          cp "target/${{ matrix.target }}/release/$PKG_NAME" "$BIN_FOLDER$asset_name"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PKG_NAME }}-${{ matrix.target }}
-          path: ${{ env.BIN_FOLDER }}
+          path: ${{ env.BIN_FOLDER }}*
 
   release:
     needs: build
@@ -99,4 +99,4 @@ jobs:
           name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
-          if-no-files-found: error
+          fail_on_unmatched_files: true
