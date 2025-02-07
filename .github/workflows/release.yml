@@ -60,12 +60,12 @@ jobs:
       - name: Set version in envvar
         id: set-envvar
         run: |
-            echo "pkg_version=$(cargo metadata | jq '.packages[] | select(.name=="${{ env.PKG_NAME }}") .version' | tr -d '"')" >> $GITHUB_OUTPUT
+            echo "pkg_version=v$(cargo metadata | jq '.packages[] | select(.name=="${{ env.PKG_NAME }}") .version' | tr -d '"')" >> $GITHUB_OUTPUT
 
       - name: Package binary
         run: |
           mkdir -p $BIN_FOLDER
-          asset_name="$PKG_NAME-v${{ outputs.pkg_version }}-${{ matrix.target }}"
+          asset_name="$PKG_NAME-$pkg_version-${{ matrix.target }}"
 
           if [[ "${{ matrix.target }}" == *"windows"* ]]; then
             asset_name="$asset_name.exe"
@@ -92,8 +92,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ env.BIN_FOLDER }}${{ env.PKG_NAME }}*/${{ env.PKG_NAME }}-*
-          tag_name: v${{ needs.build.outputs.pkg_version }}
-          name: Release v${{ needs.build.outputs.pkg_version }}
+          tag_name: ${{ needs.build.outputs.pkg_version }}
+          name: Release ${{ needs.build.outputs.pkg_version }}
           draft: false
           prerelease: false
           fail_on_unmatched_files: true
