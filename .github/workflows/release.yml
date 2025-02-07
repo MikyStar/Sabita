@@ -56,7 +56,7 @@ jobs:
       - name: Build binary
         run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Set version in envvar
+      - name: Sharing version
         id: set-envvar
         run: |
             echo "pkg_version=v$(cargo metadata | jq '.packages[] | select(.name=="${{ env.PKG_NAME }}") .version' | tr -d '"')" >> $GITHUB_OUTPUT
@@ -92,6 +92,7 @@ jobs:
         with:
           files: ${{ env.BIN_FOLDER }}${{ env.PKG_NAME }}*/${{ env.PKG_NAME }}-*
           name: Release ${{ needs.build.outputs.pkg_version }}
+          tag_name: ${{ needs.build.outputs.pkg_version }}
           draft: false
           prerelease: false
           fail_on_unmatched_files: true
