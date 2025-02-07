@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 set -e
 
-# --- CONFIGURATION: update these variables ---
-REPO_OWNER="MikyStar"  # e.g., "myuser"
-REPO_NAME="Sabita"                # e.g., "myproject"
-BINARY_NAME="sabita"                    # base name of your binary (without the target triple)
-# --------------------------------------------
+########################################
+# Repository
 
-# --- Determine platform target ---
+REPO_OWNER="MikyStar"
+REPO_NAME="Sabita"
+
+########################################
+
+# Determine platform target
+
 OS=$(uname -s)
 ARCH=$(uname -m)
 TARGET=""
@@ -52,27 +55,34 @@ esac
 
 echo "Detected target: $TARGET"
 
-# --- Get latest release info from GitHub ---
+###################
+
+# Get release data
+
 API_URL="https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest"
+
 RELEASE_JSON=$(curl -s "$API_URL")
 
-# --- Extract the asset URL matching the target using jq ---
-# This looks for an asset whose name contains the target triple.
-ASSET_URL=$(echo "$RELEASE_JSON" | jq -r --arg TARGET "$TARGET" '.assets[] | select(.name | test($TARGET)) | .browser_download_url')
+# Search appropriate binary
 
-if [ -z "$ASSET_URL" ]; then
+BIN_URL=$(echo "$RELEASE_JSON" | jq -r --arg TARGET "$TARGET" '.assets[] | select(.name | test($TARGET)) | .browser_download_url')
+
+if [ -z "$BIN_URL" ]; then
     echo "No asset found for target: $TARGET"
     exit 1
 fi
 
-echo "Found asset URL: $ASSET_URL"
+echo "Found asset URL: $BIN_URL"
 
-# --- Download the asset ---
-OUTPUT_FILE="${BINARY_NAME}-${TARGET}"
-echo "Downloading $OUTPUT_FILE ..."
-curl -L -o "$OUTPUT_FILE" "$ASSET_URL"
+###################
 
-# If the binary needs to be executable, update its permissions:
-chmod +x "$OUTPUT_FILE"
+# Install
 
-echo "Download complete: $OUTPUT_FILE"
+BIN_NAME=$(echo "$RELEASE_JSON" | jq -r --arg TARGET "$TARGET" '.assets[] | select(.name | test($TARGET)) | .name')
+
+echo "Downloading $BIN_NAME ..."
+curl -L -o "$BIN_NAME" "$BIN_URL"
+
+chmod +x "$BIN_NAME"
+
+echo "Download complete: $BIN_NAME"
