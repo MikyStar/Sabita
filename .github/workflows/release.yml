@@ -61,6 +61,7 @@ jobs:
             asset_name="$asset_name.exe"
           fi
           cp "target/${{ matrix.target }}/release/$PKG_NAME" "$BIN_FOLDER$PKG_NAME"
+          ls "$BIN_FOLDER"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
