@@ -78,6 +78,9 @@ jobs:
         with:
           path: ${{ env.BIN_FOLDER }}
 
+      - name: debug
+        run: ls -al && ls -al bin
+
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
