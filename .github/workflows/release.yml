@@ -1,0 +1,98 @@
+name: Build Binaries
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  PKG_NAME: sabita
+  BIN_FOLDER: bin/
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-gnu
+          - x86_64-apple-darwin
+          - aarch64-apple-darwin
+          # TODO
+          # - x86_64-pc-windows-msvc
+          # - aarch64-pc-windows-msvc
+
+        include:
+          - target: x86_64-apple-darwin
+            runner: macos-latest
+          - target: aarch64-apple-darwin
+            runner: macos-latest
+
+    runs-on: ${{ matrix.runner || 'ubuntu-latest' }}
+    outputs:
+      pkg_version: ${{ steps.set-envvar.outputs.pkg_version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt update
+          sudo apt install -y jq musl-tools gcc-aarch64-linux-gnu
+          rustup target add aarch64-unknown-linux-gnu
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew upgrade
+          brew install jq
+
+      - name: Build binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Sharing version
+        id: set-envvar
+        run: |
+            echo "pkg_version=v$(cargo metadata | jq '.packages[] | select(.name=="${{ env.PKG_NAME }}") .version' | tr -d '"')" >> $GITHUB_OUTPUT
+
+      - name: Package binary
+        run: |
+          mkdir -p $BIN_FOLDER
+          asset_name="$PKG_NAME-${{ steps.set-envvar.outputs.pkg_version }}-${{ matrix.target }}"
+
+          if [[ "${{ matrix.target }}" == *"windows"* ]]; then
+            asset_name="$asset_name.exe"
+          fi
+
+          cp "target/${{ matrix.target }}/release/$PKG_NAME" "$BIN_FOLDER$asset_name"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PKG_NAME }}-${{ matrix.target }}
+          path: ${{ env.BIN_FOLDER }}*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ env.BIN_FOLDER }}
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.BIN_FOLDER }}${{ env.PKG_NAME }}*/${{ env.PKG_NAME }}-*
+          name: Release ${{ needs.build.outputs.pkg_version }}
+          tag_name: ${{ needs.build.outputs.pkg_version }}
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: true
