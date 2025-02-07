@@ -56,9 +56,10 @@ jobs:
         run: cargo build --release --target ${{ matrix.target }}
 
       - name: Set version in envvar
+        id: set-version
         run: |
             # See https://stackoverflow.com/a/57969570
-            echo "VERSION=$(cargo metadata | jq '.packages[] | select(.name=="${{ env.PKG_NAME }}") .version' | tr -d '"')" >> $GITHUB_ENV
+            echo "VERSION=$(cargo metadata | jq '.packages[] | select(.name=="${{ env.PKG_NAME }}") .version' | tr -d '"')" >> $GITHUB_OUTPUT
 
       - name: Package binary
         run: |
@@ -86,10 +87,11 @@ jobs:
         with:
           path: ${{ env.BIN_FOLDER }}
 
-      - name: Debug  
-        run: echo $VERSION
-
-
+      - name: Get version
+        env:
+          VERSION: ${{ steps.set-version.outputs.VERSION }}
+        run: |
+          echo "vamue: $VERSION"
 
       - name: Create release
         uses: softprops/action-gh-release@v2
