@@ -86,18 +86,12 @@ jobs:
         with:
           path: ${{ env.BIN_FOLDER }}
 
-      - name: Debug 
-        run: |
-          ls -alh
-          ls -alh bin
-          ls -alh bin/sabita-x86_64-unknown-linux-gnu
-
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ env.BIN_FOLDER }}${{ env.PKG_NAME }}*/${{ env.PKG_NAME }}-*
-          tag_name: v${{ env.VERSION }}
-          name: Release v${{ env.VERSION }}
+          tag_name: v$VERSION
+          name: Release v$VERSION
           draft: false
           prerelease: false
           fail_on_unmatched_files: true
