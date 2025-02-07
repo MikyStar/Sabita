@@ -83,6 +83,7 @@ jobs:
         with:
           files: |
             ${{ env.BIN_FOLDER }}${{ env.PKG_NAME }}-*
+            ${{ env.BIN_FOLDER }}*
             ${{ env.PKG_NAME }}-*
             ${{ env.PKG_NAME }}*
             ${{ env.PKG_NAME }}**
