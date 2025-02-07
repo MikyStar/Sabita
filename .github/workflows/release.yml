@@ -3,7 +3,6 @@ name: Build Binaries
 on:
   push:
     branches: [ "v0.3.1" ]
-  workflow_dispatch:  # Allow manual triggering
 
 env:
   PKG_NAME: sabita
@@ -65,7 +64,7 @@ jobs:
       - name: Package binary
         run: |
           mkdir -p $BIN_FOLDER
-          asset_name="$PKG_NAME-$pkg_version-${{ matrix.target }}"
+          asset_name="$PKG_NAME-${{ steps.set-envvar.outputs.pkg_version }}-${{ matrix.target }}"
 
           if [[ "${{ matrix.target }}" == *"windows"* ]]; then
             asset_name="$asset_name.exe"
@@ -92,7 +91,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ env.BIN_FOLDER }}${{ env.PKG_NAME }}*/${{ env.PKG_NAME }}-*
-          tag_name: ${{ needs.build.outputs.pkg_version }}
           name: Release ${{ needs.build.outputs.pkg_version }}
           draft: false
           prerelease: false
