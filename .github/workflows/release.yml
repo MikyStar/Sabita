@@ -55,11 +55,15 @@ jobs:
       - name: Build binary
         run: cargo build --release --target ${{ matrix.target }}
 
+      - name: Set version in envvar
+        run: |
+            # See https://stackoverflow.com/a/57969570
+            echo "VERSION=$(cargo metadata | jq '.packages[] | select(.name=="${{ env.PKG_NAME }}") .version' | tr -d '"')" >> $GITHUB_ENV
+
       - name: Package binary
         run: |
           mkdir -p $BIN_FOLDER
-          version=$(cargo metadata | jq '.packages[] | select(.name=="${{ env.PKG_NAME }}") .version' | tr -d '"')
-          asset_name="$PKG_NAME-v$version-${{ matrix.target }}"
+          asset_name="$PKG_NAME-v$VERSION-${{ matrix.target }}"
 
           if [[ "${{ matrix.target }}" == *"windows"* ]]; then
             asset_name="$asset_name.exe"
@@ -92,8 +96,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ env.BIN_FOLDER }}${{ env.PKG_NAME }}*/${{ env.PKG_NAME }}-*
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
+          tag_name: v${{ env.VERSION }}
+          name: Release v${{ env.VERSION }}
           draft: false
           prerelease: false
           fail_on_unmatched_files: true
