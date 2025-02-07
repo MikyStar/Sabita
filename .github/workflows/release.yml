@@ -78,13 +78,13 @@ jobs:
         with:
           path: ${{ env.BIN_FOLDER }}
 
-      - name: debug
-        run: ls -al && ls -al bin
-
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ env.PKG_NAME }}-*
+          files: |
+            ${{ env.BIN_FOLDER }}${{ env.PKG_NAME }}-*
+            ${{ env.PKG_NAME }}-*
+            **${{ env.PKG_NAME }}**
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           draft: false
