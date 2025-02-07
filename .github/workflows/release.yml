@@ -43,7 +43,8 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt update
-          sudo apt install -y musl-tools
+          sudo apt install -y musl-tools gcc-aarch64-linux-gnu
+          rustup target add aarch64-unknown-linux-gnu
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
