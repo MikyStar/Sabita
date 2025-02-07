@@ -58,7 +58,7 @@ jobs:
       - name: Package binary
         run: |
           mkdir -p $BIN_FOLDER
-          version=$(cargo metadata | jq '.packages[] | select(.name=="${{ env.PKG_NAME }}") .versio')
+          version=$(cargo metadata | jq '.packages[] | select(.name=="${{ env.PKG_NAME }}") .version')
           asset_name="$PKG_NAME-$version-${{ matrix.target }}"
 
           if [[ "${{ matrix.target }}" == *"windows"* ]]; then
