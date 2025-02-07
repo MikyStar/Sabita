@@ -78,6 +78,12 @@ jobs:
         with:
           path: ${{ env.BIN_FOLDER }}
 
+      - name: Debug 
+        run: |
+          ls -alh
+          ls -alh bin
+          ls -alh bin/sabita-x86_64-unknown-linux-gnu
+
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
@@ -93,3 +99,4 @@ jobs:
           name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
+          if-no-files-found: error
