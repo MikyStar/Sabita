@@ -1,11 +1,10 @@
-use super::{
-    benchmark::{
-        bench::{benchmark as lib_bench, Config},
-        file::FilePolicy,
-        runner::BenchmarkFunction,
-    },
-    constants::PKG_VERSION,
-    grid::Grid,
+use super::{constants::PKG_VERSION, grid::Grid};
+
+use perfos::{
+    benchmark::{benchmark as lib_bench, Config},
+    file::FilePolicy,
+    runner::BenchmarkFunction,
+    time,
 };
 
 use std::time::{Duration, Instant};
@@ -48,18 +47,14 @@ pub fn benchmark() {
 ////////////////////
 
 fn benchmark_one_generate() -> Duration {
-    let start = Instant::now();
-    Grid::generate(None);
-    start.elapsed()
+    time!(|| Grid::generate(None))
 }
 
 fn benchmark_one_solver(nb_to_remove: u8) -> Duration {
     let mut grid = Grid::generate(None);
     grid.remove_random_values(nb_to_remove);
 
-    let start = Instant::now();
-    grid.solve();
-    start.elapsed()
+    time!(|| grid.solve())
 }
 
 fn solv_10() -> Duration {

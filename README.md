@@ -51,7 +51,7 @@ sabita --version
 
 ## Performances
 
-Performances are benchmarked through the `src/core/bench.rs` and the results are written in the `benchmarks` folder
+Performances are benchmarked through the [perfos](https://github.com/MikyStar/Perfos) package and the results are written in the `benchmarks` folder
 
 ## Dev
 

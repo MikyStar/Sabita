@@ -1,5 +1,5 @@
 use sabita::core::{
-    bench::benchmark,
+    benchmark::benchmark,
     cli::{parse_args, ArgParsed, ACTION},
     constants::{PKG_NAME, PKG_VERSION},
     grid::Grid,
