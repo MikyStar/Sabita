@@ -1,4 +1,4 @@
-Benchmarking sabita@v0.3.0 with 50 iterations
+Benchmarking with 50 iterations
 
 ┌──────────┬──────────────────┬─────────────────┬─────────────┬─────────────────┐
 │ Function │ Average          │ Slowest         │ Fastest     │ Std dev         │

@@ -266,6 +266,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "perfos"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d70330c7e18892c8c359a0f009c8171591ef49b1bea2391f2a86101e044d5cce"
+dependencies = [
+ "ascii_table",
+ "crossterm",
+ "humanize-duration",
+ "strip-ansi-escapes",
+]
+
+[[package]]
 name = "powerfmt"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -400,14 +412,11 @@ dependencies = [
 
 [[package]]
 name = "sabita"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
- "ascii_table",
- "crossterm",
- "humanize-duration",
+ "perfos",
  "rand",
  "rusty-hook",
- "strip-ansi-escapes",
 ]
 
 [[package]]
