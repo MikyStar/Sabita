@@ -267,9 +267,9 @@ dependencies = [
 
 [[package]]
 name = "perfos"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d70330c7e18892c8c359a0f009c8171591ef49b1bea2391f2a86101e044d5cce"
+checksum = "463d99f8e49b81291f942cf2adefe24778a902fa341e87bb7b792a6e89eeabc7"
 dependencies = [
  "ascii_table",
  "crossterm",
