@@ -267,9 +267,9 @@ dependencies = [
 
 [[package]]
 name = "perfos"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d70330c7e18892c8c359a0f009c8171591ef49b1bea2391f2a86101e044d5cce"
+checksum = "463d99f8e49b81291f942cf2adefe24778a902fa341e87bb7b792a6e89eeabc7"
 dependencies = [
  "ascii_table",
  "crossterm",
@@ -312,13 +312,12 @@ dependencies = [
 
 [[package]]
 name = "rand"
-version = "0.9.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3779b94aeb87e8bd4e834cee3650289ee9e0d5677f976ecdb6d219e5f4f6cd94"
+checksum = "9fbfd9d094a40bf3ae768db9361049ace4c0e04a4fd6b359518bd7b73a73dd97"
 dependencies = [
  "rand_chacha",
  "rand_core",
- "zerocopy 0.8.17",
 ]
 
 [[package]]
