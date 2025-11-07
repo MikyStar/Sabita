@@ -93,7 +93,9 @@ impl Grid {
         let mut values = generate().unwrap();
 
         if let Some(to_remove) = nb_to_remove {
-            if (MINIMUM_PROVIDED..=MAX_NB_VALUES).contains(&to_remove) {
+            let remaining_cells = MAX_NB_VALUES - to_remove;
+
+            if remaining_cells < MINIMUM_PROVIDED {
                 println!("Carefull, {MINIMUM_PROVIDED} is considered the minimum number of values to provide to solve a sudoku");
             }
 
