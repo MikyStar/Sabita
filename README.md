@@ -88,7 +88,7 @@ cargo tree # Recursize list of lib dependencies
 
 ### Git hooks
 
-Git hooks are handled with [rusty-hook](https://github.com/swellaby/rusty-hook), to enable them after a fresh install, run `cargo build`
+Git hooks are handled with [rusty-hook](https://github.com/swellaby/rusty-hook), to enable them after a fresh install, run `cargo test`
 
 ### Tasks
 

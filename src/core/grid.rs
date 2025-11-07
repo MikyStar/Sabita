@@ -42,7 +42,7 @@ impl PartialEq for BoxLocation {
 
 #[derive(Debug)]
 pub struct Grid {
-    values: GridValues,
+    pub values: GridValues,
 }
 
 ////////////////////
