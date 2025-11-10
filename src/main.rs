@@ -1,5 +1,7 @@
+#[cfg(feature = "benchmark")]
+use sabita::core::benchmark::benchmark;
+
 use sabita::core::{
-    benchmark::benchmark,
     cli::{parse_args, ArgParsed, ACTION},
     constants::{PKG_NAME, PKG_VERSION},
     grid::Grid,
@@ -28,6 +30,7 @@ fn main() {
             grid.dump_file(path.unwrap());
         }
         ACTION::Benchmark => {
+            #[cfg(feature = "benchmark")]
             benchmark();
         }
         ACTION::Version => {
@@ -40,6 +43,7 @@ fn main() {
             println!();
             help_solver();
             println!();
+            #[cfg(feature = "benchmark")]
             help_benchmark();
         }
         ACTION::HelpGenerate => {
@@ -59,6 +63,7 @@ fn main() {
 
 ////////////////////
 
+#[cfg(feature = "benchmark")]
 fn help_benchmark() {
     println!("Benchmark:");
     println!("           {PKG_NAME} --benchmark");

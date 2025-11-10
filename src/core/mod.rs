@@ -1,3 +1,4 @@
+#[cfg(feature = "benchmark")]
 pub mod benchmark;
 pub mod cli;
 pub mod constants;
