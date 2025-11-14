@@ -13,8 +13,6 @@ _'Sabita' (錆びた) means 'rusty' in japanese_
 
 #### From a binary release
 
-**You will need to [install jq](https://jqlang.org/download/)**
-
 ```sh
 curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/MikyStar/Sabita/refs/heads/main/install.sh | sh
 ```

@@ -65,7 +65,27 @@ RELEASE_JSON=$(curl -s "$API_URL")
 
 # Search appropriate binary
 
-BIN_URL=$(echo "$RELEASE_JSON" | jq -r --arg TARGET "$TARGET" '.assets[] | select(.name | test($TARGET)) | .browser_download_url')
+BIN_URL=""
+BIN_NAME=""
+
+# Read through the JSON and find matching asset
+while IFS= read -r line; do
+    # Check if this line contains "name" field with our TARGET
+    if echo "$line" | grep -q "\"name\"" && echo "$line" | grep -q "$TARGET"; then
+        # Extract the name value
+        BIN_NAME=$(echo "$line" | sed -n 's/.*"name": *"\([^"]*\)".*/\1/p')
+        # Signal that we found a match
+        FOUND_MATCH=1
+    fi
+    
+    # If we found a match and now see browser_download_url, extract it
+    if [ -n "$FOUND_MATCH" ] && echo "$line" | grep -q "\"browser_download_url\""; then
+        BIN_URL=$(echo "$line" | sed -n 's/.*"browser_download_url": *"\([^"]*\)".*/\1/p')
+        # Once we have both, we can break
+        break
+    fi
+done <<< "$RELEASE_JSON"
+
 
 if [ -z "$BIN_URL" ]; then
     echo "No asset found for target: $TARGET"
@@ -78,7 +98,6 @@ echo "Found asset URL: $BIN_URL"
 
 # Install
 
-BIN_NAME=$(echo "$RELEASE_JSON" | jq -r --arg TARGET "$TARGET" '.assets[] | select(.name | test($TARGET)) | .name')
 
 echo "Downloading $BIN_NAME ..."
 curl -L -o "$BIN_NAME" "$BIN_URL"
