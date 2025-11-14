@@ -264,9 +264,9 @@ dependencies = [
 
 [[package]]
 name = "perfos"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48dfbc780a22e5b015718a298064e46a96aedb7263d473c3b5cfecb927ba75d5"
+checksum = "112d2c32de8961e08b9fbc11c650aac1cd02b7be773fda779a107c45ddd8f40c"
 dependencies = [
  "crossterm",
  "humanize-duration",
