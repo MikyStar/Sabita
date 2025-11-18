@@ -46,7 +46,16 @@ sabita --version
 
 ## Performances
 
-Performances are benchmarked through the [perfos](https://github.com/MikyStar/Perfos) package and the results are written in the `benchmarks` folder
+_Benchmarks are handle through two libs, Perfos and Criterion_
+
+1. Perfos
+
+[Perfos](https://github.com/MikyStar/Perfos) will be storing the results in the `benchmarks` folder
+2. Criterion
+
+[Criterion](https://bheisler.github.io/criterion.rs/book/getting_started.html) will store them in `target/criterion`.
+
+A simple overview of every functions done by Criterion and the evolution from the previous run would be under the `report` folder.
 
 ## Dev
 
