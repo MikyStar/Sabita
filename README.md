@@ -35,13 +35,9 @@ sabita g file/to/create 50 # Generate a sudoku with 50 missing values
 # Solver
 sabita s file/to/solve # Solve the sudoku (check out file sudoku.example) to see format
 
-# Benchmark
-sabita --features benchmark --benchmark # Launch the benchmarking script, see the 'Performances' section below
-
 # Help
 sabita -h
 sabita --help
-sabita --features benchmark --help # Prints also the help for benchmarking
 
 # Version
 sabita -v
@@ -50,7 +46,15 @@ sabita --version
 
 ## Performances
 
-Performances are benchmarked through the [perfos](https://github.com/MikyStar/Perfos) package and the results are written in the `benchmarks` folder
+_Benchmarks are handle through two libs, Perfos and Criterion_
+
+1. Perfos
+
+[Perfos](https://github.com/MikyStar/Perfos) will be storing the results in the `benchmarks` folder
+
+2. Criterion
+
+[Criterion](https://bheisler.github.io/criterion.rs/book/getting_started.html)
 
 ## Dev
 
@@ -83,6 +87,11 @@ cargo clean # Remove 'targer' directory (build artifacts, doc ...)
 cargo publish # Publish project to crates.io registry
 
 cargo tree # Recursize list of lib dependencies
+
+cargo bench --bench perfos
+cargo bench --bench criterion
+cargo bench # Run all of them
+
 ```
 
 ### Git hooks

@@ -6,7 +6,6 @@ use std::{env, fmt, path::Path};
 pub enum ACTION {
     Generate,
     Solve,
-    Benchmark,
 
     HelpGenerate,
     HelpSolve,
@@ -27,7 +26,6 @@ impl fmt::Display for ArgParsed {
         let action = match self.action {
             ACTION::Generate => "generate",
             ACTION::Solve => "solve",
-            ACTION::Benchmark => "benchmark",
 
             ACTION::HelpGenerate => "help generate",
             ACTION::HelpSolve => "help solve",
@@ -115,11 +113,6 @@ pub fn parse_args() -> ArgParsed {
                 nb_missing: None,
             }
         }
-        "--benchmark" => ArgParsed {
-            action: ACTION::Benchmark,
-            path: None,
-            nb_missing: None,
-        },
         "-v" | "--version" => ArgParsed {
             action: ACTION::Version,
             path: None,
