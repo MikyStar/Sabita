@@ -35,13 +35,9 @@ sabita g file/to/create 50 # Generate a sudoku with 50 missing values
 # Solver
 sabita s file/to/solve # Solve the sudoku (check out file sudoku.example) to see format
 
-# Benchmark
-sabita --features benchmark --benchmark # Launch the benchmarking script, see the 'Performances' section below
-
 # Help
 sabita -h
 sabita --help
-sabita --features benchmark --help # Prints also the help for benchmarking
 
 # Version
 sabita -v
@@ -83,6 +79,11 @@ cargo clean # Remove 'targer' directory (build artifacts, doc ...)
 cargo publish # Publish project to crates.io registry
 
 cargo tree # Recursize list of lib dependencies
+
+cargo bench --bench perfos
+cargo bench --bench criterion
+cargo bench # Run all of them
+
 ```
 
 ### Git hooks

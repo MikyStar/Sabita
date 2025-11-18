@@ -3,6 +3,16 @@
 version = 4
 
 [[package]]
+name = "ascii_table_rs"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fab932c2aa49ea41adfc3b6e5aa8ad9b50685ad0e144306bfcfa78bf6c8bb765"
+dependencies = [
+ "strip-ansi-escapes",
+ "unicode-width 0.1.14",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -136,7 +146,7 @@ version = "0.2.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cfe4fbac503b8d1f88e6676011885f34b7174f46e59956bba534ba83abded4df"
 dependencies = [
- "unicode-width",
+ "unicode-width 0.2.2",
 ]
 
 [[package]]
@@ -264,14 +274,14 @@ dependencies = [
 
 [[package]]
 name = "perfos"
-version = "0.3.1"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "112d2c32de8961e08b9fbc11c650aac1cd02b7be773fda779a107c45ddd8f40c"
+checksum = "f16e569fb5ae57dfbb72ad5944a3a1301420f16c0cb78e966109407f63945a03"
 dependencies = [
+ "ascii_table_rs",
  "crossterm",
  "humanize-duration",
  "strip-ansi-escapes",
- "unicode-width",
 ]
 
 [[package]]
@@ -378,7 +388,7 @@ dependencies = [
 
 [[package]]
 name = "sabita"
-version = "0.5.2"
+version = "0.5.3"
 dependencies = [
  "perfos",
  "rand",
@@ -515,6 +525,12 @@ name = "unicode-segmentation"
 version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6ccf251212114b54433ec949fd6a7841275f9ada20dddd2f29e9ceea4501493"
+
+[[package]]
+name = "unicode-width"
+version = "0.1.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7dd6e30e90baa6f72411720665d41d89b9a3d039dc45b8faea1ddd07f617f6af"
 
 [[package]]
 name = "unicode-width"

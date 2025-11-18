@@ -1,4 +1,4 @@
-use super::{constants::PKG_VERSION, grid::Grid};
+use sabita::core::{constants::PKG_VERSION, grid::Grid};
 
 use perfos::{
     benchmark::{benchmark as lib_bench, Config},
@@ -11,7 +11,7 @@ use std::time::{Duration, Instant};
 
 ////////////////////////////////////////
 
-pub fn benchmark() {
+pub fn main() {
     let file_path = format!("benchmarks/v{PKG_VERSION}.benchmark");
 
     lib_bench(Config {

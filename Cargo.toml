@@ -1,7 +1,7 @@
 [package]
 name = "sabita"
 description = "Sabita is a Sudoku solver / generator made with Rust"
-version = "0.5.2"
+version = "0.5.3"
 authors = ["Mike AUBENAS"]
 edition = "2021"
 readme = "README.md"
@@ -9,12 +9,21 @@ rust-version = "1.83.0"
 repository = "https://github.com/MikyStar/Sabita"
 license = "MIT"
 
-[features]
-benchmark = ["dep:perfos"]
+[[bench]]
+name = "perfos"
+path = "benches/perfos.rs"
+harness = false
+
+[[bench]]
+name = "criterion"
+path = "benches/criterion.rs"
+harness = true
+
+####################
 
 [dev-dependencies]
 rusty-hook = "^0.11.2"
+perfos = "0.4.0"
 
 [dependencies]
-perfos = { version = "0.3.1", optional = true }
 rand = "0.9.0"
